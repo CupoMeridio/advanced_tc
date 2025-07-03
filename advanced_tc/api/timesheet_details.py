@@ -481,3 +481,27 @@ def get_project_timesheets(doctype, txt, searchfield, start, page_len, filters):
     except Exception as e:
         frappe.log_error(f"Errore in get_project_timesheets: {str(e)}")
         return []
+
+
+def has_permission():
+    """
+    Verifica se l'utente corrente ha i permessi per accedere all'app Advanced Timesheet Calendar
+    """
+    try:
+        # Verifica se l'utente ha uno dei ruoli necessari
+        user_roles = frappe.get_roles(frappe.session.user)
+        required_roles = ["Timesheet Calendar User", "Timesheet Calendar Manager", "System Manager", "HR Manager"]
+        
+        # Se l'utente ha almeno uno dei ruoli richiesti, può accedere
+        if any(role in user_roles for role in required_roles):
+            return True
+        
+        # Verifica se l'utente ha permessi sui doctype Timesheet o Timesheet Detail
+        if frappe.has_permission("Timesheet", "read") or frappe.has_permission("Timesheet Detail", "read"):
+            return True
+        
+        return False
+        
+    except Exception as e:
+        frappe.log_error(f"Errore in has_permission: {str(e)}")
+        return False
