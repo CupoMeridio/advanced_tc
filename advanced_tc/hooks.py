@@ -1,3 +1,5 @@
+from frappe import _
+
 app_name = "advanced_tc"
 app_title = "AdvancedTC"
 app_publisher = "Prova"
