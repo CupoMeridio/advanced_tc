@@ -1128,4 +1128,5 @@ Questo progetto è stato realizzato come attività di tirocinio presso l'azienda
 
 ---
 
+
 **Sviluppato con ❤️ per la comunità ERPNext**
