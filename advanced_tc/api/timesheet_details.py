@@ -371,6 +371,29 @@ def get_filter_options():
         user_roles = frappe.get_roles(frappe.session.user)
         is_manager = any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
         
+        # Progetti: per Employee solo quelli assegnati tramite "Assign To", per Manager tutti aperti
+        if is_manager:
+            projects = frappe.get_all("Project", 
+                filters={"status": "Open"}, 
+                fields=["name", "project_name"],
+                order_by="project_name")
+        else:
+            # Per Employee: progetti assegnati tramite sistema "Assign To" di ERPNext
+            current_user = frappe.session.user
+            assigned_projects = frappe.db.sql("""
+                SELECT DISTINCT p.name, p.project_name
+                FROM `tabProject` p
+                INNER JOIN `tabToDo` t ON t.reference_type = 'Project' AND t.reference_name = p.name
+                WHERE t.allocated_to = %s AND t.status = 'Open' AND p.status = 'Open'
+                ORDER BY p.project_name
+            """, (current_user,), as_dict=True)
+            
+            if assigned_projects:
+                projects = [{"name": p.name, "project_name": p.project_name} for p in assigned_projects]
+            else:
+                # Se non ha progetti assegnati, lista vuota - l'utente deve contattare HR
+                projects = []
+        
         # Lista employees: manager vedono tutti, employee solo se stesso
         if is_manager:
             employees = frappe.get_all("Employee", 
@@ -393,11 +416,7 @@ def get_filter_options():
         
         return {
             "employees": employees,
-            "projects": frappe.get_all("Project", 
-                fields=["name", "project_name"], 
-                filters={"status": "Open"},
-                order_by="project_name"
-            ),
+            "projects": projects,
             "activity_types": frappe.get_all("Activity Type", 
                 fields=["name", "activity_type"], 
                 order_by="activity_type"
@@ -523,6 +542,64 @@ def get_timesheet_projects(doctype, txt, searchfield, start, page_len, filters):
         
     except Exception as e:
         frappe.log_error(f"Errore in get_timesheet_projects: {str(e)}")
+        return []
+
+
+@frappe.whitelist()
+def get_employee_projects(doctype, txt, searchfield, start, page_len, filters):
+    """
+    Restituisce i progetti per i dialog di creazione attività
+    Utilizza il sistema di assegnazione ToDo di ERPNext
+    """
+    try:
+        # Controllo permessi basato sui ruoli
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
+        
+        if is_manager:
+            # Manager vedono tutti i progetti aperti
+            query = """
+                SELECT p.name, p.project_name
+                FROM `tabProject` p
+                WHERE p.status = 'Open'
+                AND (p.name LIKE %(txt)s OR p.project_name LIKE %(txt)s)
+                ORDER BY p.project_name
+                LIMIT %(start)s, %(page_len)s
+            """
+            
+            return frappe.db.sql(query, {
+                'txt': f'%{txt}%',
+                'start': start,
+                'page_len': page_len
+            })
+        else:
+            # Employee vedono solo progetti assegnati tramite "Assign To"
+            current_user = frappe.session.user
+            query = """
+                SELECT DISTINCT p.name, p.project_name
+                FROM `tabProject` p
+                INNER JOIN `tabToDo` t ON t.reference_type = 'Project' AND t.reference_name = p.name
+                WHERE t.allocated_to = %(user)s AND t.status = 'Open' AND p.status = 'Open'
+                AND (p.name LIKE %(txt)s OR p.project_name LIKE %(txt)s)
+                ORDER BY p.project_name
+                LIMIT %(start)s, %(page_len)s
+            """
+            
+            assigned_projects = frappe.db.sql(query, {
+                'user': current_user,
+                'txt': f'%{txt}%',
+                'start': start,
+                'page_len': page_len
+            })
+            
+            if assigned_projects:
+                 return assigned_projects
+             else:
+                 # Se non ha progetti assegnati, lista vuota - l'utente deve contattare HR
+                 return []
+        
+    except Exception as e:
+        frappe.log_error(f"Errore in get_employee_projects: {str(e)}")
         return []
 
 

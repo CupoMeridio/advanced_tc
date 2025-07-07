@@ -192,9 +192,26 @@ class AdvancedTimesheetCalendar {
 		
 		// Popola project filter
 		const projectSelect = this.page.main.find('#project-filter');
-		this.filter_options.projects.forEach(proj => {
-			projectSelect.append(`<option value="${proj.name}">${proj.project_name}</option>`);
-		});
+		
+		// Controlla se l'utente è un employee senza progetti assegnati
+		if (this.user_permissions && this.user_permissions.is_employee_only && this.filter_options.projects.length === 0) {
+			// Mostra messaggio per employee senza progetti
+			projectSelect.closest('.filter-group').html(`
+				<label>Project</label>
+				<div class="alert alert-warning" style="margin-top: 5px; padding: 10px; font-size: 12px;">
+					<strong>Nessun progetto assegnato</strong><br>
+					Contatta il tuo HR per essere assegnato a un progetto e poter utilizzare l'applicazione.
+				</div>
+			`);
+			
+			// Disabilita il pulsante "Add Activity"
+			this.page.main.find('#add-activity').prop('disabled', true).text('Nessun progetto disponibile');
+		} else {
+			// Popola normalmente i progetti
+			this.filter_options.projects.forEach(proj => {
+				projectSelect.append(`<option value="${proj.name}">${proj.project_name}</option>`);
+			});
+		}
 	}
 	
 	apply_ui_permissions() {
@@ -433,19 +450,17 @@ class AdvancedTimesheetCalendar {
 					default: start_time && end_time ? this.default_settings.default_break_end : ''
 				},
 				{
-				fieldtype: 'Link',
-				fieldname: 'project',
-				label: 'Project',
-				options: 'Project',
-				default: event_data.project || this.filters.project || '',
-				get_query: function() {
-					return {
-						filters: {
-							'status': 'Open'
-						}
-					};
-				}
-			},
+			fieldtype: 'Link',
+			fieldname: 'project',
+			label: 'Project',
+			options: 'Project',
+			default: event_data.project || this.filters.project || '',
+			get_query: function() {
+				return {
+					query: 'advanced_tc.api.timesheet_details.get_employee_projects'
+				};
+			}
+		},
 				{
 					fieldtype: 'Link',
 					fieldname: 'task',
@@ -748,9 +763,7 @@ class AdvancedTimesheetCalendar {
 	default: event_data.project || this.filters.project || '',
 	get_query: function() {
 	return {
-	filters: {
-	'status': 'Open'
-	}
+	query: 'advanced_tc.api.timesheet_details.get_employee_projects'
 	};
 	}
 	},
