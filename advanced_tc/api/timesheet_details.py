@@ -593,10 +593,10 @@ def get_employee_projects(doctype, txt, searchfield, start, page_len, filters):
             })
             
             if assigned_projects:
-                 return assigned_projects
-             else:
-                 # Se non ha progetti assegnati, lista vuota - l'utente deve contattare HR
-                 return []
+                return assigned_projects
+            else:
+                # Se non ha progetti assegnati, lista vuota - l'utente deve contattare HR
+                return []
         
     except Exception as e:
         frappe.log_error(f"Errore in get_employee_projects: {str(e)}")
