@@ -286,7 +286,15 @@ class AdvancedTimesheetCalendar {
 				label: 'Employee',
 				options: 'Employee',
 				reqd: 1,
-				default: event_data.employee || employee_id || this.filters.employee || ''
+				default: event_data.employee || employee_id || this.filters.employee || '',
+				get_query: function() {
+					return {
+						query: 'advanced_tc.api.timesheet_details.get_employee_query',
+						filters: {
+							'status': 'Active'
+						}
+					};
+				}
 			},
 				{
 					fieldtype: 'Datetime',
@@ -571,13 +579,21 @@ class AdvancedTimesheetCalendar {
 	title: is_edit ? 'Edit Activity' : 'Add New Activity',
 	fields: [
 	{
-	fieldtype: 'Link',
-	fieldname: 'employee',
-	label: 'Employee',
-	options: 'Employee',
-	reqd: 1,
-	default: event_data.employee || employee_id || this.filters.employee || ''
-	},
+			fieldtype: 'Link',
+			fieldname: 'employee',
+			label: 'Employee',
+			options: 'Employee',
+			reqd: 1,
+			default: event_data.employee || employee_id || this.filters.employee || '',
+			get_query: function() {
+				return {
+					query: 'advanced_tc.api.timesheet_details.get_employee_query',
+					filters: {
+						'status': 'Active'
+					}
+				};
+			}
+		},
 	{
 	fieldtype: 'Datetime',
 	fieldname: 'from_time',

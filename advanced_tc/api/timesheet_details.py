@@ -32,6 +32,20 @@ def get_timesheet_details(start_date=None, end_date=None, filters=None):
         conditions = []
         values = {}
         
+        # Controllo permessi: se l'utente non è un manager, può vedere solo i propri timesheet
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = "Timesheet Calendar Manager" in user_roles or "System Manager" in user_roles or "HR Manager" in user_roles
+        
+        if not is_manager:
+            # Trova l'employee associato all'utente corrente
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+            if current_employee:
+                conditions.append("ts.employee = %(current_employee)s")
+                values["current_employee"] = current_employee
+            else:
+                # Se l'utente non ha un employee associato, non può vedere nessun timesheet
+                return []
+        
         # Filtri per date
         if start_date:
             conditions.append("tsd.from_time >= %(start_date)s")
@@ -44,8 +58,10 @@ def get_timesheet_details(start_date=None, end_date=None, filters=None):
         # Filtri aggiuntivi
         if filters:
             if filters.get("employee"):
-                conditions.append("ts.employee = %(employee)s")
-                values["employee"] = filters["employee"]
+                # Se l'utente non è un manager, ignora il filtro employee se diverso dal proprio
+                if is_manager or filters["employee"] == values.get("current_employee"):
+                    conditions.append("ts.employee = %(employee)s")
+                    values["employee"] = filters["employee"]
             
             if filters.get("project"):
                 conditions.append("tsd.project = %(project)s")
@@ -137,15 +153,27 @@ def create_timesheet_detail(data):
         if isinstance(data, str):
             data = json.loads(data)
         
+        # Controllo permessi: verifica che l'utente possa creare timesheet per questo employee
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = "Timesheet Calendar Manager" in user_roles or "System Manager" in user_roles or "HR Manager" in user_roles
+        
+        if not is_manager:
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+            if not current_employee or data.get("employee") != current_employee:
+                frappe.throw(_("Non hai i permessi per creare timesheet per questo dipendente"))
+        
         timesheet_name = data.get("timesheet")
         if timesheet_name:
             timesheet = frappe.get_doc("Timesheet", timesheet_name)
+            # Verifica che l'utente possa modificare questo timesheet
+            if not is_manager:
+                current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+                if timesheet.employee != current_employee:
+                    frappe.throw(_("Non hai i permessi per modificare questo timesheet"))
         else:
             # Calcola l'inizio della settimana per la data dell'attività
             activity_date = getdate(data.get("from_time"))
             week_start = get_week_start_date(activity_date)
-            
-
             
             timesheet = get_or_create_timesheet(
                 employee=data.get("employee"),
@@ -216,6 +244,16 @@ def update_timesheet_detail(name, data):
         
         doc = frappe.get_doc("Timesheet Detail", name)
         
+        # Controllo permessi: verifica che l'utente possa modificare questo timesheet
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = "Timesheet Calendar Manager" in user_roles or "System Manager" in user_roles or "HR Manager" in user_roles
+        
+        if not is_manager:
+            timesheet = frappe.get_doc("Timesheet", doc.parent)
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+            if not current_employee or timesheet.employee != current_employee:
+                frappe.throw(_("Non hai i permessi per modificare questo timesheet"))
+        
         # Funzione helper per pulire le date
         def clean_datetime(dt_str):
             if not dt_str:
@@ -268,6 +306,16 @@ def delete_timesheet_detail(name):
         doc = frappe.get_doc("Timesheet Detail", name)
         timesheet_name = doc.parent
         
+        # Controllo permessi: verifica che l'utente possa eliminare questo timesheet detail
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = "Timesheet Calendar Manager" in user_roles or "System Manager" in user_roles or "HR Manager" in user_roles
+        
+        if not is_manager:
+            timesheet = frappe.get_doc("Timesheet", timesheet_name)
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+            if not current_employee or timesheet.employee != current_employee:
+                frappe.throw(_("Non hai i permessi per eliminare questo timesheet"))
+        
         doc.delete()
         
         # Aggiorna il timesheet parent
@@ -303,12 +351,30 @@ def get_filter_options():
     Recupera le opzioni per i filtri
     """
     try:
-        return {
-            "employees": frappe.get_all("Employee", 
+        # Controllo permessi per la lista degli employee
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = "Timesheet Calendar Manager" in user_roles or "System Manager" in user_roles or "HR Manager" in user_roles
+        
+        if is_manager:
+            # I manager possono vedere tutti gli employee attivi
+            employees = frappe.get_all("Employee", 
                 fields=["name", "employee_name"], 
                 filters={"status": "Active"},
                 order_by="employee_name"
-            ),
+            )
+        else:
+            # Gli utenti normali vedono solo se stessi
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["name", "employee_name"])
+            if current_employee:
+                employees = [{
+                    "name": current_employee[0],
+                    "employee_name": current_employee[1]
+                }]
+            else:
+                employees = []
+        
+        return {
+            "employees": employees,
             "projects": frappe.get_all("Project", 
                 fields=["name", "project_name"], 
                 filters={"status": "Open"},
@@ -482,26 +548,38 @@ def get_project_timesheets(doctype, txt, searchfield, start, page_len, filters):
         frappe.log_error(f"Errore in get_project_timesheets: {str(e)}")
         return []
 
-
-def has_permission():
+@frappe.whitelist()
+def get_employee_query(doctype, txt, searchfield, start, page_len, filters):
     """
-    Verifica se l'utente corrente ha i permessi per accedere all'app Advanced Timesheet Calendar
+    Query personalizzata per il campo Employee che rispetta i permessi utente
     """
     try:
-        # Verifica se l'utente ha uno dei ruoli necessari
+        # Controllo permessi
         user_roles = frappe.get_roles(frappe.session.user)
-        required_roles = ["Timesheet Calendar User", "Timesheet Calendar Manager", "System Manager", "HR Manager"]
+        is_manager = "Timesheet Calendar Manager" in user_roles or "System Manager" in user_roles or "HR Manager" in user_roles
         
-        # Se l'utente ha almeno uno dei ruoli richiesti, può accedere
-        if any(role in user_roles for role in required_roles):
-            return True
-        
-        # Verifica se l'utente ha permessi sui doctype Timesheet o Timesheet Detail
-        if frappe.has_permission("Timesheet", "read") or frappe.has_permission("Timesheet Detail", "read"):
-            return True
-        
-        return False
-        
+        if is_manager:
+            # I manager possono vedere tutti gli employee attivi
+            return frappe.db.sql("""
+                SELECT name, employee_name
+                FROM `tabEmployee`
+                WHERE status = 'Active'
+                AND (name LIKE %(txt)s OR employee_name LIKE %(txt)s)
+                ORDER BY employee_name
+                LIMIT %(start)s, %(page_len)s
+            """, {
+                'txt': f'%{txt}%',
+                'start': start,
+                'page_len': page_len
+            })
+        else:
+            # Gli utenti normali vedono solo se stessi
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["name", "employee_name"])
+            if current_employee and (txt.lower() in current_employee[0].lower() or txt.lower() in current_employee[1].lower()):
+                return [(current_employee[0], current_employee[1])]
+            else:
+                return []
+                
     except Exception as e:
-        frappe.log_error(f"Errore in has_permission: {str(e)}")
-        return False
+        frappe.log_error(f"Errore in get_employee_query: {str(e)}")
+        return []
