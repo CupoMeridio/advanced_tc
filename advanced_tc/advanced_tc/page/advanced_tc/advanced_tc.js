@@ -219,17 +219,15 @@ class AdvancedTimesheetCalendar {
 				// Nascondi il pulsante Settings
 				this.page.main.find('#settings-btn').hide();
 				
-				// Disabilita la modifica del calendario per eventi non propri
-				if (this.calendar) {
-					this.calendar.setOption('editable', false);
-					this.calendar.setOption('selectable', true); // Mantieni la selezione per creare nuove attività
-				}
+				// Non disabilitiamo più l'editable globalmente
+				// I controlli di permesso sono gestiti negli event handlers individuali
 			}
 		} catch (error) {
 			console.error('Errore nell\'applicazione dei permessi UI:', error);
 			// Applica permessi restrittivi in caso di errore
 			this.page.main.find('#employee-filter').closest('.filter-group').hide();
 			this.page.main.find('#settings-btn').hide();
+			// I controlli di drag and drop sono gestiti negli event handlers
 		}
 	}
 	
