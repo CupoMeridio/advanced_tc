@@ -10,8 +10,9 @@ def after_install():
         
         frappe.db.commit()
         print("✅ Installazione completata con successo!")
-        print("ℹ️ L'app è accessibile tramite link diretto: /app/advanced_tc")
-        print("ℹ️ L'app utilizza i permessi di base di ERPNext per Timesheet e Timesheet Detail")
+        print("ℹ️ L'app è accessibile tramite:")
+        print("   • Link diretto: /app/advanced_tc")
+        print("   • Icona nella sezione Apps del desktop ERPNext")
         
     except Exception as e:
         frappe.db.rollback()
@@ -40,7 +41,7 @@ def before_uninstall():
         
         frappe.db.commit()
         print("✅ Pulizia completata")
-        print("ℹ️ I permessi di base di ERPNext rimangono invariati")
+        print("ℹ️ Disinstallazione Advanced Timesheet Calendar completata")
         
     except Exception as e:
         frappe.db.rollback()

@@ -53,10 +53,12 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 ## 🎯 Caratteristiche Principali
 
 - **Vista Calendario Interattiva**: Visualizzazione moderna con FullCalendar.js
-- **Filtri Avanzati**: Employee, Project
+- **Filtri Avanzati**: Employee, Project con visibilità basata sui ruoli
 - **Gestione Completa CRUD**: Crea, modifica, elimina attività
 - **Drag & Drop**: Sposta e ridimensiona attività
 - **Integrazione ERPNext**: Completa con Timesheet e Timesheet Detail
+- **Sistema di Assegnazione Progetti**: Utilizza la funzionalità "Assign To" di ERPNext per il controllo accessi
+- **Accesso Basato sui Ruoli**: I manager vedono tutti i progetti, gli employee solo quelli assegnati
 - **Export e Reporting**: CSV export
 - **Gestione Pause**: Supporto completo per break e pause pranzo
 - **Personalizzazione**: Colori dinamici e configurazioni avanzate
@@ -118,6 +120,30 @@ bench --site [nome-sito] migrate
 bench restart
 ```
 
+## 🚀 Accesso all'Applicazione
+
+Dopo l'installazione riuscita, puoi accedere ad Advanced Timesheet Calendar in due modi:
+
+### 1. Sezione Apps (Raccomandato)
+- Naviga al desktop di ERPNext
+- Clicca sulla sezione **"Apps"**
+- Cerca l'icona **"Advanced Timesheet Calendar"** con il simbolo del calendario
+- Clicca sull'icona per avviare l'applicazione
+
+### 2. Link Diretto
+- Naviga direttamente a: `https://tuo-sito.com/app/advanced_tc`
+- Oppure usa il percorso relativo: `/app/advanced_tc`
+
+### Configurazione Iniziale
+
+**Per i Manager:**
+- Vedrai immediatamente tutti i progetti aperti nel calendario
+- Usa la funzione "Assign To" di ERPNext per assegnare progetti agli employee
+
+**Per gli Employee:**
+- Se non hai progetti assegnati, vedrai un messaggio per contattare HR
+- Una volta assegnati i progetti, vedrai solo i tuoi progetti assegnati
+
 ## ✅ Verifica Configurazione
 
 ### Struttura File Richiesta
@@ -159,6 +185,36 @@ advanced_tc/
 3. **advanced_tc.json**: Definisce la pagina principale
 4. **API**: Endpoint per gestione timesheet details
 5. **Frontend**: JavaScript per calendario interattivo
+
+## 🔐 Controllo Accessi Progetti
+
+### Visibilità Progetti Basata sui Ruoli
+
+AdvancedTC implementa un sofisticato sistema di controllo accessi ai progetti utilizzando la funzionalità nativa "Assign To" di ERPNext:
+
+#### **Per i Manager** (System Manager, HR Manager, HR User)
+- **Accesso Completo**: Possono visualizzare e creare attività per tutti i progetti aperti
+- **Nessuna Restrizione**: Visibilità completa dei progetti nei filtri e nei dialog
+- **Controllo Assegnazioni**: Possono assegnare progetti agli employee utilizzando la funzione "Assign To" di ERPNext
+
+#### **Per gli Employee**
+- **Accesso Limitato**: Possono visualizzare solo i progetti assegnati tramite "Assign To"
+- **Filtri Automatici**: I filtri progetti e i dialog di creazione attività mostrano solo i progetti assegnati
+- **Nessun Accesso senza Assegnazione**: Se non hanno progetti assegnati, vedono una lista vuota con istruzioni per contattare HR
+
+### Come Assegnare Progetti agli Employee
+
+1. **Naviga al Progetto**: Vai a qualsiasi documento Progetto in ERPNext
+2. **Usa Assign To**: Clicca il pulsante "Assign To" nella sidebar
+3. **Seleziona Employee**: Scegli l'employee/gli employee da assegnare al progetto
+4. **Accesso Automatico**: L'employee vedrà immediatamente il progetto in AdvancedTC
+
+### Funzionalità di Sicurezza
+
+- **Nessun Accesso di Fallback**: Gli employee senza assegnazioni non possono vedere alcun progetto
+- **Messaggi Chiari**: Gli utenti sono informati quando hanno bisogno dell'assistenza HR per l'assegnazione progetti
+- **Filtri Coerenti**: Le stesse regole di accesso si applicano ai filtri della sidebar e ai dialog di creazione attività
+- **Integrazione ERPNext**: Utilizza il sistema nativo ToDo di ERPNext per le assegnazioni
 
 ## 🔧 Risoluzione Problemi
 
