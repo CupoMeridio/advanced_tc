@@ -139,8 +139,6 @@ advanced_tc/
 │   │   └── js/
 │   │       └── timesheet_calendar.js  # Utilities JS
 │   ├── config/
-│   │   ├── desktop.py                 # Configurazione desktop
-│   │   └── workspace.py               # Configurazione workspace
 │   └── advanced_tc/
 │       └── page/
 │           └── advanced_tc/
