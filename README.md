@@ -155,7 +155,7 @@ advanced_tc/
 ### Key Components
 
 1. **hooks.py**: Configures app_name="advanced_tc", CSS, JS and workspace
-2. **install.py**: Creates roles, permissions, Activity Types and workspace
+2. **install.py**: Configures the app to use ERPNext base permissions
 3. **advanced_tc.json**: Defines the main page
 4. **API**: Endpoints for timesheet details management
 5. **Frontend**: JavaScript for interactive calendar
@@ -201,7 +201,7 @@ bench --site [site-name] install-app advanced_tc
 
 **Verify**:
 1. **Python Version**: Make sure to use Python 3.10+
-2. **Permissions**: Verify permissions on Timesheet doctypes
+2. **Permissions**: Verify ERPNext base permissions on Timesheet doctypes
 3. **Dependencies**: Check that ERPNext v15+ is installed
 4. **Logs**: Check logs for specific errors
 
@@ -215,7 +215,7 @@ tail -f /path/to/frappe-bench/logs/worker.log
 
 **Verify**:
 1. **Migration**: Make sure migration is completed
-2. **User permissions**: Verify user has necessary roles
+2. **User permissions**: Verify user has necessary ERPNext base roles
 3. **Cache**: Clear browser cache
 4. **Restart**: Completely restart the bench
 
@@ -705,8 +705,15 @@ To add new features:
 
 ### Permissions
 
-Make sure users have appropriate permissions:
+The app uses ERPNext base roles and permissions. Make sure users have appropriate permissions:
 
+**Required ERPNext Roles:**
+- `Employee`: Basic timesheet access for own records
+- `HR User`: Extended HR functionality
+- `HR Manager`: Full HR management capabilities
+- `System Manager`: Complete system access
+
+**Required DocType Permissions:**
 ```json
 {
     "Timesheet": ["read", "write", "create"],
@@ -717,6 +724,8 @@ Make sure users have appropriate permissions:
     "Activity Type": ["read"]
 }
 ```
+
+**Note**: The app no longer creates custom roles. It relies entirely on ERPNext's built-in permission system.
 
 ### Performance
 
@@ -792,7 +801,7 @@ default_activity_types = [
    bench --site [site-name] console
    >>> frappe.get_roles("[username]")
    ```
-   User must have at least the roles: `Employee`, `System Manager` or custom roles with Timesheet access.
+   User must have at least the roles: `Employee`, `HR User`, `HR Manager`, or `System Manager` with Timesheet access.
 
 3. **Clear browser cache**:
    - Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)

@@ -121,7 +121,12 @@ tail -f sites/[nome-sito]/logs/web.log
 
 **Verifica permessi:**
 1. Vai a: Setup > Permissions > Role Permissions Manager
-2. Controlla i permessi per:
+2. Controlla i permessi per i ruoli di base ERPNext:
+   - Employee: Accesso base ai timesheet
+   - HR User: Funzionalità HR estese
+   - HR Manager: Gestione HR completa
+   - System Manager: Accesso completo
+3. Verifica permessi sui DocType:
    - Timesheet
    - Timesheet Detail
    - Employee
@@ -222,7 +227,7 @@ create_test_data()
 
 - [ ] Nessun errore JavaScript
 - [ ] Performance accettabile
-- [ ] Permessi configurati
+- [ ] Permessi di base ERPNext configurati
 - [ ] Integrazione ERPNext completa
 
 ## 📝 Report Bug
@@ -240,9 +245,10 @@ Se trovi problemi, raccogli queste informazioni:
 
 ### Test Sicurezza
 
-1. Testa con utenti con permessi limitati
-2. Verifica che non si possano modificare timesheet di altri utenti
-3. Testa la validazione dei dati in input
+1. Testa con utenti con ruoli diversi (Employee, HR User, HR Manager)
+2. Verifica che gli utenti Employee possano accedere solo ai propri timesheet
+3. Verifica che HR Manager possa accedere a tutti i timesheet
+4. Testa la validazione dei dati in input
 
 ### Test Integrazione
 

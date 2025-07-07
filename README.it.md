@@ -155,7 +155,7 @@ advanced_tc/
 ### Componenti Chiave
 
 1. **hooks.py**: Configura app_name="advanced_tc", CSS, JS e workspace
-2. **install.py**: Crea ruoli, permessi, Activity Types e workspace
+2. **install.py**: Configura l'app per utilizzare i permessi di base di ERPNext
 3. **advanced_tc.json**: Definisce la pagina principale
 4. **API**: Endpoint per gestione timesheet details
 5. **Frontend**: JavaScript per calendario interattivo
@@ -201,7 +201,7 @@ bench --site [nome-sito] install-app advanced_tc
 
 **Verifica**:
 1. **Versione Python**: Assicurati di usare Python 3.10+
-2. **Permessi**: Verifica i permessi sui doctype Timesheet
+2. **Permessi**: Verifica i permessi di base di ERPNext sui doctype Timesheet
 3. **Dipendenze**: Controlla che ERPNext v15+ sia installato
 4. **Logs**: Controlla i log per errori specifici
 
@@ -215,7 +215,7 @@ tail -f /path/to/frappe-bench/logs/worker.log
 
 **Verifica**:
 1. **Migrazione**: Assicurati che la migrazione sia completata
-2. **Permessi utente**: Verifica che l'utente abbia i ruoli necessari
+2. **Permessi utente**: Verifica che l'utente abbia i ruoli di base di ERPNext necessari
 3. **Cache**: Pulisci la cache del browser
 4. **Riavvio**: Riavvia completamente il bench
 
@@ -705,8 +705,15 @@ Per aggiungere nuove funzionalità:
 
 ### Permessi
 
-Assicurati che gli utenti abbiano i permessi appropriati:
+L'app utilizza i ruoli e permessi di base di ERPNext. Assicurati che gli utenti abbiano i permessi appropriati:
 
+**Ruoli ERPNext Richiesti:**
+- `Employee`: Accesso base ai timesheet per i propri record
+- `HR User`: Funzionalità HR estese
+- `HR Manager`: Capacità complete di gestione HR
+- `System Manager`: Accesso completo al sistema
+
+**Permessi DocType Richiesti:**
 ```json
 {
     "Timesheet": ["read", "write", "create"],
@@ -717,6 +724,8 @@ Assicurati che gli utenti abbiano i permessi appropriati:
     "Activity Type": ["read"]
 }
 ```
+
+**Nota**: L'app non crea più ruoli personalizzati. Si basa interamente sul sistema di permessi integrato di ERPNext.
 
 ### Performance
 
@@ -792,7 +801,7 @@ default_activity_types = [
    bench --site [nome-sito] console
    >>> frappe.get_roles("[nome-utente]")
    ```
-   L'utente deve avere almeno i ruoli: `Employee`, `System Manager` o ruoli personalizzati con accesso ai Timesheet.
+   L'utente deve avere almeno i ruoli: `Employee`, `HR User`, `HR Manager`, o `System Manager` con accesso ai Timesheet.
 
 3. **Pulisci la cache del browser**:
    - Premi `Ctrl+Shift+R` (Windows/Linux) o `Cmd+Shift+R` (Mac)

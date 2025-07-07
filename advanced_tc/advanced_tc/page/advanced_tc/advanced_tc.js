@@ -15,6 +15,7 @@ class AdvancedTimesheetCalendar {
 		this.calendar = null;
 		this.filters = {};
 		this.filter_options = {};
+		this.user_permissions = {};
 		
 		// Carica le impostazioni predefinite dal localStorage
 		this.default_settings = this.load_default_settings();
@@ -132,16 +133,30 @@ class AdvancedTimesheetCalendar {
 				this.load_events(info.start, info.end, successCallback, failureCallback);
 			},
 			eventClick: (info) => {
-				this.show_activity_dialog(info.event);
+				if (this.can_edit_event(info.event)) {
+					this.show_activity_dialog(info.event);
+				} else {
+					frappe.msgprint('Non hai i permessi per modificare questa attività.');
+				}
 			},
 			select: (info) => {
 				this.handle_time_selection(info);
 			},
 			eventDrop: (info) => {
-				this.update_activity(info.event);
+				if (this.can_edit_event(info.event)) {
+					this.update_activity(info.event);
+				} else {
+					info.revert();
+					frappe.msgprint('Non hai i permessi per modificare questa attività.');
+				}
 			},
 			eventResize: (info) => {
-				this.update_activity(info.event);
+				if (this.can_edit_event(info.event)) {
+					this.update_activity(info.event);
+				} else {
+					info.revert();
+					frappe.msgprint('Non hai i permessi per modificare questa attività.');
+				}
 			},
 			slotMinTime: '06:00:00',
 			slotMaxTime: '22:00:00',
@@ -160,7 +175,9 @@ class AdvancedTimesheetCalendar {
 			callback: (r) => {
 				if (r.message) {
 					this.filter_options = r.message;
+					this.user_permissions = r.message.user_permissions || {};
 					this.populate_filters();
+					this.apply_ui_permissions();
 				}
 			}
 		});
@@ -178,6 +195,77 @@ class AdvancedTimesheetCalendar {
 		this.filter_options.projects.forEach(proj => {
 			projectSelect.append(`<option value="${proj.name}">${proj.project_name}</option>`);
 		});
+	}
+	
+	apply_ui_permissions() {
+		try {
+			// Verifica se user_permissions è definito e valido
+			if (!this.user_permissions || typeof this.user_permissions !== 'object') {
+				console.warn('User permissions non disponibili, applicando permessi di default');
+				this.user_permissions = {
+					is_employee_only: true,
+					is_manager: false,
+					current_employee: null
+				};
+			}
+			
+			// Verifica se l'utente è un Employee semplice
+			const isEmployee = this.user_permissions.is_employee_only || false;
+			
+			if (isEmployee) {
+				// Nascondi il filtro employee per gli Employee semplici
+				this.page.main.find('#employee-filter').closest('.filter-group').hide();
+				
+				// Nascondi il pulsante Settings
+				this.page.main.find('#settings-btn').hide();
+				
+				// Disabilita la modifica del calendario per eventi non propri
+				if (this.calendar) {
+					this.calendar.setOption('editable', false);
+					this.calendar.setOption('selectable', true); // Mantieni la selezione per creare nuove attività
+				}
+			}
+		} catch (error) {
+			console.error('Errore nell\'applicazione dei permessi UI:', error);
+			// Applica permessi restrittivi in caso di errore
+			this.page.main.find('#employee-filter').closest('.filter-group').hide();
+			this.page.main.find('#settings-btn').hide();
+		}
+	}
+	
+	can_edit_event(event) {
+		try {
+			// Verifica che event e user_permissions siano validi
+			if (!event || !event.extendedProps) {
+				console.warn('Evento non valido per controllo permessi');
+				return false;
+			}
+			
+			if (!this.user_permissions || typeof this.user_permissions !== 'object') {
+				console.warn('Permessi utente non disponibili, negando accesso');
+				return false;
+			}
+			
+			// Se l'utente non è un Employee semplice, può modificare tutto
+			if (!this.user_permissions.is_employee_only) {
+				return true;
+			}
+			
+			// Se è un Employee semplice, può modificare solo i propri eventi
+			const currentUserEmployee = this.user_permissions.current_employee;
+			const eventEmployee = event.extendedProps.employee;
+			
+			// Verifica che entrambi i valori siano definiti
+			if (!currentUserEmployee || !eventEmployee) {
+				console.warn('Employee non definito per controllo permessi');
+				return false;
+			}
+			
+			return currentUserEmployee === eventEmployee;
+		} catch (error) {
+			console.error('Errore nel controllo permessi evento:', error);
+			return false; // Nega accesso in caso di errore
+		}
 	}
 	
 	apply_filters() {
@@ -277,6 +365,23 @@ class AdvancedTimesheetCalendar {
 		const event_start = event ? event.start : null;
 		const event_end = event ? event.end : null;
 		
+		// Determina se l'utente può selezionare altri employee con controllo errori
+		let canSelectEmployee = true;
+		let defaultEmployee = event_data.employee || employee_id || this.filters.employee || '';
+		
+		try {
+			if (this.user_permissions && typeof this.user_permissions === 'object') {
+				canSelectEmployee = !this.user_permissions.is_employee_only;
+				if (this.user_permissions.is_employee_only && this.user_permissions.current_employee) {
+					defaultEmployee = this.user_permissions.current_employee;
+				}
+			} else {
+				console.warn('User permissions non disponibili nel dialog, permettendo selezione employee');
+			}
+		} catch (error) {
+			console.error('Errore nel controllo permessi dialog:', error);
+		}
+		
 		const dialog = new frappe.ui.Dialog({
 			title: is_edit ? 'Edit Activity' : 'Add New Activity',
 			fields: [
@@ -286,7 +391,8 @@ class AdvancedTimesheetCalendar {
 				label: 'Employee',
 				options: 'Employee',
 				reqd: 1,
-				default: event_data.employee || employee_id || this.filters.employee || ''
+				read_only: !canSelectEmployee,
+				default: defaultEmployee
 			},
 				{
 					fieldtype: 'Datetime',
@@ -567,6 +673,23 @@ class AdvancedTimesheetCalendar {
 	const event_start = event ? event.start : null;
 	const event_end = event ? event.end : null;
 	
+	// Determina se l'utente può selezionare altri employee con controllo errori
+	let canSelectEmployee = true;
+	let defaultEmployee = event_data.employee || employee_id || this.filters.employee || '';
+	
+	try {
+		if (this.user_permissions && typeof this.user_permissions === 'object') {
+			canSelectEmployee = !this.user_permissions.is_employee_only;
+			if (this.user_permissions.is_employee_only && this.user_permissions.current_employee) {
+				defaultEmployee = this.user_permissions.current_employee;
+			}
+		} else {
+			console.warn('User permissions non disponibili nel dialog, permettendo selezione employee');
+		}
+	} catch (error) {
+		console.error('Errore nel controllo permessi dialog:', error);
+	}
+	
 	const dialog = new frappe.ui.Dialog({
 	title: is_edit ? 'Edit Activity' : 'Add New Activity',
 	fields: [
@@ -576,7 +699,8 @@ class AdvancedTimesheetCalendar {
 	label: 'Employee',
 	options: 'Employee',
 	reqd: 1,
-	default: event_data.employee || employee_id || this.filters.employee || ''
+	read_only: !canSelectEmployee,
+	default: defaultEmployee
 	},
 	{
 	fieldtype: 'Datetime',
