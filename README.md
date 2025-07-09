@@ -193,9 +193,7 @@ advanced_tc/
 ├── README.md                          # Documentation (English)
 ├── README.it.md                       # Documentation (Italian)
 ├── license.txt                        # License
-├── test_implementation.md             # Test documentation
-├── test_weekly_functionality.py       # Test scripts
-└── test_weekly_timesheets.md          # Test documentation
+
 ```
 
 ### Key Components

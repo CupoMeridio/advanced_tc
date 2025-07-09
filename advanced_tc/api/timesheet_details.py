@@ -171,6 +171,7 @@ def create_timesheet_detail(data):
                 frappe.throw(_("Non autorizzato a creare attività per altri dipendenti"))
         
         timesheet_name = data.get("timesheet")
+        
         if timesheet_name:
             timesheet = frappe.get_doc("Timesheet", timesheet_name)
             # Verifica permessi sul timesheet esistente
@@ -183,11 +184,22 @@ def create_timesheet_detail(data):
             activity_date = getdate(data.get("from_time"))
             week_start = get_week_start_date(activity_date)
             
-            timesheet = get_or_create_timesheet(
+            timesheet_info = get_or_create_timesheet(
                 employee=data.get("employee"),
                 start_date=week_start,
                 company=data.get("company")
             )
+            
+            # Se get_or_create_timesheet restituisce un timesheet esistente
+            if timesheet_info.get("name"):
+                timesheet = frappe.get_doc("Timesheet", timesheet_info["name"])
+            else:
+                # Crea un nuovo timesheet
+                timesheet = frappe.new_doc("Timesheet")
+                timesheet.employee = data.get("employee")
+                timesheet.start_date = timesheet_info["start_date"]
+                timesheet.end_date = timesheet_info["end_date"]
+                timesheet.company = data.get("company")
         
         # Verifica sovrapposizioni con time_logs esistenti
         new_from_time = get_datetime(data.get("from_time"))
@@ -226,15 +238,20 @@ def create_timesheet_detail(data):
         # Inserisci il timesheet solo se è nuovo
         if not timesheet.name:
             timesheet.insert()
+            # Commit immediatamente per rendere il timesheet disponibile per altre transazioni
+            frappe.db.commit()
         
         # Salva il timesheet con il nuovo detail
         timesheet.calculate_hours()
         timesheet.save()
+        # Commit finale per salvare il time_log
+        frappe.db.commit()
         
         return {
             "success": True,
             "timesheet_detail": timesheet_detail.name,
-            "timesheet": timesheet.name
+            "timesheet": timesheet.name,
+            "timesheet_name": timesheet.name
         }
     
     except Exception as e:
@@ -313,12 +330,21 @@ def update_timesheet_detail(name, data):
 def delete_timesheet_detail(name):
     """
     Elimina un Time Sheet Detail con controllo permessi
+    APPROCCIO CORRETTO: Modifica il Timesheet padre invece di eliminare direttamente il child
     """
     try:
-        doc = frappe.get_doc("Timesheet Detail", name)
-        timesheet_name = doc.parent
+        # Ottieni il detail per identificare il timesheet padre
+        detail_doc = frappe.get_doc("Timesheet Detail", name)
+        timesheet_name = detail_doc.parent
         
-        # Controllo permessi: gli Employee possono eliminare solo dai propri timesheet
+        # Carica il timesheet padre
+        timesheet = frappe.get_doc("Timesheet", timesheet_name)
+        
+        # Controllo permessi: verifica se l'utente può modificare questo timesheet
+        if not timesheet.has_permission("write"):
+            frappe.throw(_("Non hai i permessi per modificare questo timesheet"))
+        
+        # Controllo aggiuntivo per Employee: possono modificare solo i propri timesheet
         user_roles = frappe.get_roles(frappe.session.user)
         is_manager = any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
         
@@ -327,28 +353,39 @@ def delete_timesheet_detail(name):
             if not current_employee:
                 frappe.throw(_("Utente non associato a nessun dipendente"))
             
-            # Verifica che il timesheet appartenga all'utente corrente
-            timesheet = frappe.get_doc("Timesheet", timesheet_name)
             if timesheet.employee != current_employee:
                 frappe.throw(_("Non autorizzato a eliminare da questo timesheet"))
         
-        doc.delete()
+        # Rimuovi il dettaglio specifico dalla lista time_logs
+        # Questo è l'approccio corretto per i DocType child
+        timesheet.time_logs = [
+            d for d in timesheet.time_logs if d.name != name
+        ]
         
-        # Aggiorna il timesheet parent
-        timesheet = frappe.get_doc("Timesheet", timesheet_name)
-        
-        # ✅ AGGIUNTO: Controlla se il timesheet è rimasto vuoto
+        # Controlla se il timesheet è rimasto vuoto
         if not timesheet.time_logs or len(timesheet.time_logs) == 0:
-            # Se non ci sono più time_logs, elimina anche il timesheet
-            timesheet.delete()
-            frappe.db.commit()
-            return {
-                "success": True,
-                "timesheet_deleted": True,
-                "message": "Activity and empty timesheet deleted successfully"
-            }
+            # Se non ci sono più time_logs, prova a eliminare il timesheet
+            # Se l'utente non ha permessi, lascia il timesheet vuoto
+            if timesheet.has_permission("delete"):
+                timesheet.delete()
+                frappe.db.commit()
+                return {
+                    "success": True,
+                    "timesheet_deleted": True,
+                    "message": "Activity and empty timesheet deleted successfully"
+                }
+            else:
+                # L'utente non può eliminare il timesheet, ma può lasciarlo vuoto
+                # Salva il timesheet vuoto per mantenere la struttura
+                timesheet.calculate_hours()
+                timesheet.save()
+                return {
+                    "success": True,
+                    "timesheet_deleted": False,
+                    "message": "Activity deleted successfully. Empty timesheet preserved (insufficient permissions to delete)."
+                }
         else:
-            # Se ci sono ancora time_logs, aggiorna il timesheet
+            # Se ci sono ancora time_logs, salva il timesheet modificato
             timesheet.calculate_hours()
             timesheet.save()
             return {
@@ -431,6 +468,7 @@ def get_filter_options():
         frappe.log_error(f"Errore in get_filter_options: {str(e)}")
         return {"employees": [], "projects": [], "activity_types": [], "user_permissions": {"is_manager": False}}
 
+@frappe.whitelist()
 def get_or_create_timesheet(employee, start_date, company):
     """
     Recupera o crea un timesheet settimanale per l'employee e la data specificata
@@ -451,18 +489,24 @@ def get_or_create_timesheet(employee, start_date, company):
     )
     
     if existing:
-        return frappe.get_doc("Timesheet", existing[0].name)
+        timesheet = frappe.get_doc("Timesheet", existing[0].name)
+        return {
+            "name": timesheet.name,
+            "start_date": timesheet.start_date,
+            "end_date": timesheet.end_date,
+            "employee": timesheet.employee
+        }
     
-    # Crea un nuovo timesheet settimanale SENZA salvarlo
-    timesheet = frappe.get_doc({
-        "doctype": "Timesheet",
+    # Non esiste un timesheet per questa settimana, restituisci informazioni per crearne uno nuovo
+    return {
+        "name": None,
+        "start_date": str(week_start),
+        "end_date": str(week_end),
         "employee": employee,
-        "start_date": week_start,
-        "end_date": week_end,
-        "company": company or frappe.defaults.get_user_default("Company")
-    })
-    
-    return timesheet
+        "is_new": True,
+        "week_start": str(week_start),
+        "week_end": str(week_end)
+    }
 
 # ✅ Prima funzione (linea 339) - per progetti
 def get_event_color(project):

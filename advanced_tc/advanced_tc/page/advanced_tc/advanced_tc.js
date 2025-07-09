@@ -27,11 +27,13 @@ class AdvancedTimesheetCalendar {
 	// Funzione helper per calcolare l'inizio della settimana (lunedì)
 	getWeekStartDate(date) {
 		const d = new Date(date);
-		const day = d.getDay();
-		const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Aggiusta per lunedì
-		d.setDate(diff);
-		d.setHours(0, 0, 0, 0); // Reset ore
-		return d;
+		const day = d.getDay(); // 0=domenica, 1=lunedì, ..., 6=sabato
+		// Calcola quanti giorni sottrarre per arrivare al lunedì
+		const daysToSubtract = day === 0 ? 6 : day - 1; // Se domenica (0), sottrai 6, altrimenti sottrai (day-1)
+		const weekStart = new Date(d);
+		weekStart.setDate(d.getDate() - daysToSubtract);
+		weekStart.setHours(0, 0, 0, 0); // Reset ore
+		return weekStart;
 	}
 	
 	setup_page() {
@@ -401,14 +403,24 @@ class AdvancedTimesheetCalendar {
 			title: is_edit ? 'Edit Activity' : 'Add New Activity',
 			fields: [
 				{
-				fieldtype: 'Link',
-				fieldname: 'employee',
-				label: 'Employee',
-				options: 'Employee',
-				reqd: 1,
-				read_only: !canSelectEmployee,
-				default: defaultEmployee
-			},
+			fieldtype: 'Link',
+			fieldname: 'employee',
+			label: 'Employee',
+			options: 'Employee',
+			reqd: 1,
+			read_only: !canSelectEmployee,
+			default: defaultEmployee
+		},
+			{
+			fieldtype: 'Data',
+			fieldname: 'timesheet',
+			label: 'Timesheet',
+			read_only: 1,
+			hidden: 1,
+			in_list_view: 0,
+			print_hide: 1,
+			default: event_data.timesheet || ''
+		},
 				{
 					fieldtype: 'Datetime',
 					fieldname: 'from_time',
@@ -514,6 +526,57 @@ class AdvancedTimesheetCalendar {
 				this.delete_activity(event.id, dialog);
 			}, 'btn-danger');
 		}
+		
+		// Event listener per employee - rimuove le chiamate duplicate
+		dialog.fields_dict.employee.df.onchange = () => {
+			const employee = dialog.get_value('employee');
+			
+			if (employee) {
+				// Reset project e task quando cambia employee
+				dialog.set_value('project', '');
+				dialog.set_value('task', '');
+				// Il timesheet sarà gestito dall'inizializzazione principale
+			}
+		};
+		
+		// Event listener per from_time - rimuove le chiamate duplicate
+		dialog.fields_dict.from_time.df.onchange = () => {
+			// Il timesheet sarà gestito dall'inizializzazione principale
+		};
+		
+		// Inizializza il timesheet se employee e from_time sono già impostati
+		// Facciamo una sola chiamata per evitare race conditions
+		setTimeout(() => {
+			const employee = dialog.get_value('employee');
+			const fromTime = dialog.get_value('from_time');
+			
+			if (employee && fromTime && !is_edit) {
+				// Calcola l'inizio della settimana per la data dell'attività
+				const activityDate = new Date(fromTime);
+				const weekStart = this.getWeekStartDate(activityDate);
+				
+				// Ottieni o crea il timesheet settimanale (una sola chiamata)
+				frappe.call({
+					method: 'advanced_tc.api.timesheet_details.get_or_create_timesheet',
+					args: {
+						employee: employee,
+						start_date: frappe.datetime.obj_to_str(weekStart),
+						company: frappe.defaults.get_default('Company')
+					},
+					callback: (r) => {
+						if (r.message) {
+							if (r.message.name) {
+								// Timesheet esistente trovato
+								dialog.set_value('timesheet', r.message.name);
+							} else if (r.message.is_new) {
+								// Nuovo timesheet sarà creato dal backend
+								// Lascia il campo timesheet vuoto, sarà gestito dal backend
+							}
+						}
+					}
+				});
+			}
+		}, 100);
 		
 		dialog.show();
 	}
@@ -716,6 +779,16 @@ class AdvancedTimesheetCalendar {
 	default: defaultEmployee
 	},
 	{
+	fieldtype: 'Data',
+	fieldname: 'timesheet',
+	label: 'Timesheet',
+	read_only: 1,
+	hidden: 1,
+	in_list_view: 0,
+	print_hide: 1,
+	default: event_data.timesheet || ''
+	},
+	{
 	fieldtype: 'Datetime',
 	fieldname: 'from_time',
 	label: 'From Time',
@@ -859,22 +932,7 @@ class AdvancedTimesheetCalendar {
 	}
 	};
 	
-	// Event listener per from_time
-	dialog.fields_dict.from_time.df.onchange = () => {
-	updateBreakTimeLimits();
-	
-	// Valida e correggi break_start se necessario
-	const fromTime = dialog.get_value('from_time');
-	const breakStart = dialog.get_value('break_start');
-	
-	if (fromTime && breakStart && moment(breakStart).isBefore(moment(fromTime))) {
-	dialog.set_value('break_start', '');
-	frappe.show_alert({
-				message: 'Break start time reset: must be after activity start time',
-				indicator: 'orange'
-			}, 4);
-	}
-	};
+
 	
 	// Event listener per to_time
 	dialog.fields_dict.to_time.df.onchange = () => {
@@ -914,6 +972,38 @@ class AdvancedTimesheetCalendar {
 
 	// Trigger the has_break change event to initialize the visibility
 	dialog.fields_dict.has_break.df.onchange();
+	
+	// Inizializza il timesheet se employee e from_time sono già impostati
+	setTimeout(() => {
+		const employee = dialog.get_value('employee');
+		const fromTime = dialog.get_value('from_time');
+		
+		if (employee && fromTime && !is_edit) {
+			// Calcola l'inizio della settimana per la data dell'attività
+			const activityDate = new Date(fromTime);
+			const weekStart = this.getWeekStartDate(activityDate);
+			const weekStartStr = weekStart.getFullYear() + '-' + 
+								 String(weekStart.getMonth() + 1).padStart(2, '0') + '-' + 
+								 String(weekStart.getDate()).padStart(2, '0');
+			
+			// Cerca o crea il timesheet settimanale usando la stessa funzione del dialogo con pausa
+			frappe.call({
+				method: 'advanced_tc.api.timesheet_details.get_or_create_timesheet',
+				args: {
+					employee: employee,
+					start_date: weekStartStr,
+					company: frappe.defaults.get_user_default('Company') || frappe.defaults.get_global_default('default_company')
+				},
+				callback: (r) => {
+				if (r.message && r.message.name) {
+					dialog.set_value('timesheet', r.message.name);
+				} else {
+					// Lascia il campo timesheet vuoto, sarà gestito dal backend
+				}
+			}
+			});
+		}
+	}, 100);
 
 	// Event listener per break_start
 	dialog.fields_dict.break_start.df.onchange = () => {
@@ -995,10 +1085,85 @@ class AdvancedTimesheetCalendar {
 	// Event listener per employee
 	dialog.fields_dict.employee.df.onchange = () => {
 		const employee = dialog.get_value('employee');
+		const fromTime = dialog.get_value('from_time');
+		
+		if (employee && fromTime) {
+			// Calcola l'inizio della settimana per la data dell'attività
+			const activityDate = new Date(fromTime);
+			const weekStart = this.getWeekStartDate(activityDate);
+			const weekStartStr = weekStart.getFullYear() + '-' + 
+								 String(weekStart.getMonth() + 1).padStart(2, '0') + '-' + 
+								 String(weekStart.getDate()).padStart(2, '0');
+			
+			// Usa get_or_create_timesheet per coerenza
+			frappe.call({
+				method: 'advanced_tc.api.timesheet_details.get_or_create_timesheet',
+				args: {
+					employee: employee,
+					start_date: weekStartStr,
+					company: frappe.defaults.get_user_default('Company') || frappe.defaults.get_global_default('default_company')
+				},
+				callback: (r) => {
+					if (r.message && r.message.name) {
+						// Timesheet esistente trovato
+						dialog.set_value('timesheet', r.message.name);
+					} else {
+						// Nessun timesheet esistente, sarà creato dal backend
+						dialog.set_value('timesheet', '');
+					}
+				}
+			});
+		}
+		
 		if (employee) {
 			// Reset project e task quando cambia employee
 			dialog.set_value('project', '');
 			dialog.set_value('task', '');
+		}
+	};
+	
+	// Event listener per from_time per aggiornare il timesheet quando cambia la data
+	dialog.fields_dict.from_time.df.onchange = () => {
+		const employee = dialog.get_value('employee');
+		const fromTime = dialog.get_value('from_time');
+		
+		if (employee && fromTime) {
+			// Calcola l'inizio della settimana per la nuova data
+			const activityDate = new Date(fromTime);
+			const weekStart = this.getWeekStartDate(activityDate);
+			const weekStartStr = weekStart.getFullYear() + '-' + 
+								 String(weekStart.getMonth() + 1).padStart(2, '0') + '-' + 
+								 String(weekStart.getDate()).padStart(2, '0');
+			
+			// Usa get_or_create_timesheet per coerenza
+			frappe.call({
+				method: 'advanced_tc.api.timesheet_details.get_or_create_timesheet',
+				args: {
+					employee: employee,
+					start_date: weekStartStr,
+					company: frappe.defaults.get_user_default('Company') || frappe.defaults.get_global_default('default_company')
+				},
+				callback: (r) => {
+					if (r.message && r.message.name) {
+						dialog.set_value('timesheet', r.message.name);
+					} else {
+						dialog.set_value('timesheet', '');
+					}
+				}
+			});
+		}
+		
+		updateBreakTimeLimits();
+		
+		// Valida e correggi break_start se necessario
+		const breakStart = dialog.get_value('break_start');
+		
+		if (fromTime && breakStart && moment(breakStart).isBefore(moment(fromTime))) {
+			dialog.set_value('break_start', '');
+			frappe.show_alert({
+				message: 'Break start time reset: must be after activity start time',
+				indicator: 'orange'
+			}, 4);
 		}
 	};
 
@@ -1028,6 +1193,7 @@ this.update_activity_data(event.id, data);
 }
 
 create_activity(values, dialog) {
+    
     // Se c'è una pausa, crea due attività separate
     if (values.has_break && values.break_start && values.break_end) {
         // Prima attività: dall'inizio alla pausa
@@ -1036,7 +1202,7 @@ create_activity(values, dialog) {
         delete firstActivity.has_break;
         delete firstActivity.break_start;
         delete firstActivity.break_end;
-
+        
         // Seconda attività: dalla pausa alla fine
         const secondActivity = { ...values };
         secondActivity.from_time = moment(values.from_time).format('YYYY-MM-DD') + ' ' + values.break_end;
@@ -1045,14 +1211,19 @@ create_activity(values, dialog) {
         delete secondActivity.break_end;
 
         // Crea la prima attività
+        
         frappe.call({
-					method: 'advanced_tc.api.timesheet_details.create_timesheet_detail',
+			method: 'advanced_tc.api.timesheet_details.create_timesheet_detail',
             args: {
                 data: JSON.stringify(firstActivity)
             },
             callback: (r) => {
                 if (r.message && r.message.success) {
-                    // Se la prima attività è creata con successo, crea la seconda
+                    // Se la prima attività è creata con successo, usa il timesheet restituito per la seconda
+                    if (r.message.timesheet_name) {
+                        secondActivity.timesheet = r.message.timesheet_name;
+                    }
+                    
                     frappe.call({
                         method: 'advanced_tc.api.timesheet_details.create_timesheet_detail',
                         args: {
@@ -1090,7 +1261,9 @@ create_activity(values, dialog) {
         delete activity.has_break;
         delete activity.break_start;
         delete activity.break_end;
+        
 
+        
         frappe.call({
             method: 'advanced_tc.api.timesheet_details.create_timesheet_detail',
             args: {
