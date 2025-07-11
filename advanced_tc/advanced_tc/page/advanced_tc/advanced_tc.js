@@ -476,25 +476,62 @@ class AdvancedTimesheetCalendar {
 				{
 					fieldtype: 'Link',
 					fieldname: 'task',
-					label: 'Task',
-					options: 'Task',
-					default: event_data.task,
+				label: 'Task',
+				options: 'Task',
+				default: event_data.task,
 					get_query: function() {
-						const project = dialog.get_value('project');
-						if (project) {
-							return {
-								filters: {
-									'project': project,
-									'status': ['!=', 'Cancelled']
-								}
-							};
-						}
+					const project = dialog.get_value('project');
+					const employee = dialog.get_value('employee');
+					if (project && employee) {
 						return {
+							query: 'advanced_tc.api.timesheet_details.get_employee_tasks',
 							filters: {
-								'status': ['!=', 'Cancelled']
+								'project': project,
+								'employee': employee
 							}
 						};
 					}
+					return {
+						filters: {
+							'status': ['!=', 'Cancelled']
+						}
+					};
+				},
+				onchange: function() {
+					const task = dialog.get_value('task');
+					if (task) {
+						// Auto-compila il progetto quando si seleziona un task
+						frappe.call({
+							method: 'advanced_tc.api.timesheet_details.get_task_project',
+							args: { task_name: task },
+							callback: (r) => {
+								if (r.message) {
+							dialog.set_value('project', r.message);
+						}
+							}
+						});
+					}
+				},
+				click: function() {
+					const project = dialog.get_value('project');
+					const employee = dialog.get_value('employee');
+					
+					if (project && employee) {
+						// Verifica se l'employee ha task per questo progetto
+						frappe.call({
+							method: 'advanced_tc.api.timesheet_details.check_employee_has_tasks',
+							args: {
+								employee: employee,
+								project: project
+							},
+							callback: (r) => {
+						if (!r.message) {
+							frappe.show_alert('Contatta il tuo Project Manager per l\'assegnazione di un task.');
+						}
+					}
+						});
+					}
+				}
 				},
 				{
 					fieldtype: 'Link',
@@ -538,6 +575,46 @@ class AdvancedTimesheetCalendar {
 				// Il timesheet sarà gestito dall'inizializzazione principale
 			}
 		};
+		
+		// Event listener per project - resetta il task quando cambia progetto
+		dialog.fields_dict.project.df.onchange = () => {
+			const project = dialog.get_value('project');
+			
+			if (!project) {
+				// Resetta il valore del task quando non c'è progetto
+				dialog.set_value('task', '');
+			}
+		};
+		
+		// Event listener esplicito per il click del campo task
+		setTimeout(() => {
+			if (dialog.fields_dict.task && dialog.fields_dict.task.$input) {
+				dialog.fields_dict.task.$input.on('click', () => {
+					const project = dialog.get_value('project');
+					const employee = dialog.get_value('employee');
+					
+					if (project && employee) {
+						// Verifica se l'employee ha task per questo progetto
+						frappe.call({
+							method: 'advanced_tc.api.timesheet_details.check_employee_has_tasks',
+							args: {
+								employee: employee,
+								project: project
+							},
+							callback: (r) => {
+								if (!r.message) {
+									frappe.msgprint({
+										title: 'Attenzione',
+										message: 'Contatta il tuo Project Manager per l\'assegnazione di un task.',
+										indicator: 'orange'
+									});
+								}
+							}
+						});
+					}
+				});
+			}
+		}, 500);
 		
 		// Event listener per from_time - rimuove le chiamate duplicate
 		dialog.fields_dict.from_time.df.onchange = () => {
@@ -873,20 +950,60 @@ class AdvancedTimesheetCalendar {
 	options: 'Task',
 	default: event_data.task,
 	get_query: function() {
-	const project = dialog.get_value('project');
-	if (project) {
-	return {
-	filters: {
-	'project': project,
-	'status': ['!=', 'Cancelled']
-	}
-	};
-	}
-	return {
-	filters: {
-	'status': ['!=', 'Cancelled']
-	}
-	};
+		const project = dialog.get_value('project');
+		const employee = dialog.get_value('employee');
+		if (project && employee) {
+			return {
+				query: 'advanced_tc.api.timesheet_details.get_employee_tasks',
+				filters: {
+					'project': project,
+					'employee': employee
+				}
+			};
+		}
+		return {
+			filters: {
+				'status': ['!=', 'Cancelled']
+			}
+		};
+	},
+	onchange: function() {
+		const task = dialog.get_value('task');
+		if (task) {
+			// Auto-compila il progetto quando si seleziona un task
+			frappe.call({
+				method: 'advanced_tc.api.timesheet_details.get_task_project',
+				args: { task_name: task },
+				callback: (r) => {
+					if (r.message) {
+						dialog.set_value('project', r.message);
+					}
+				}
+			});
+		}
+	},
+	click: function() {
+		const project = dialog.get_value('project');
+		const employee = dialog.get_value('employee');
+		
+		if (project && employee) {
+			// Verifica se l'employee ha task per questo progetto
+			frappe.call({
+				method: 'advanced_tc.api.timesheet_details.check_employee_has_tasks',
+				args: {
+					employee: employee,
+					project: project
+				},
+				callback: (r) => {
+					if (!r.message) {
+						frappe.show_alert({
+							message: 'Contatta il tuo Project Manager per l\'assegnazione di un task.',
+							indicator: 'orange'
+						}, 5);
+					}
+				}
+			});
+		}
 	}
 	},
 	{
@@ -933,6 +1050,36 @@ class AdvancedTimesheetCalendar {
 	dialog.fields_dict.task.refresh();
 	}, 200);
 	};
+	
+	// Event listener esplicito per il click del campo task
+	setTimeout(() => {
+		if (dialog.fields_dict.task && dialog.fields_dict.task.$input) {
+			dialog.fields_dict.task.$input.on('click', () => {
+				const project = dialog.get_value('project');
+				const employee = dialog.get_value('employee');
+				
+				if (project && employee) {
+					// Verifica se l'employee ha task per questo progetto
+					frappe.call({
+						method: 'advanced_tc.api.timesheet_details.check_employee_has_tasks',
+						args: {
+							employee: employee,
+							project: project
+						},
+						callback: (r) => {
+							if (!r.message) {
+								frappe.msgprint({
+									title: 'Attenzione',
+									message: 'Contatta il tuo Project Manager per l\'assegnazione di un task.',
+									indicator: 'orange'
+								});
+							}
+						}
+					});
+				}
+			});
+		}
+	}, 500);
 	
 	// Dopo la creazione del dialog, aggiungi questi event listeners:
 	

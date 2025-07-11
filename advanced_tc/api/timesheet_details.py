@@ -723,6 +723,116 @@ def get_project_timesheets(doctype, txt, searchfield, start, page_len, filters):
         return []
 
 
+@frappe.whitelist()
+def get_employee_tasks(doctype, txt, searchfield, start, page_len, filters):
+    """
+    Restituisce i task assegnati a un employee per un progetto specifico
+    """
+    try:
+        employee = filters.get('employee')
+        project = filters.get('project')
+        
+        if not employee or not project:
+            return []
+        
+        # Controllo permessi basato sui ruoli
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
+        
+        # Se non è manager, verifica che stia cercando task per se stesso
+        if not is_manager and "Employee" in user_roles:
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+            if employee != current_employee:
+                return []
+        
+        # Query per ottenere task assegnate all'employee per il progetto specifico
+        query = """
+            SELECT DISTINCT t.name, t.subject
+            FROM `tabTask` t
+            INNER JOIN `tabToDo` td ON td.reference_type = 'Task' AND td.reference_name = t.name
+            INNER JOIN `tabEmployee` e ON e.user_id = td.allocated_to
+            WHERE t.project = %(project)s
+            AND e.name = %(employee)s
+            AND t.status != 'Cancelled'
+            AND td.status = 'Open'
+            AND (t.name LIKE %(txt)s OR t.subject LIKE %(txt)s)
+            ORDER BY t.subject
+            LIMIT %(start)s, %(page_len)s
+        """
+        
+        return frappe.db.sql(query, {
+            'employee': employee,
+            'project': project,
+            'txt': f'%{txt}%',
+            'start': start,
+            'page_len': page_len
+        })
+        
+    except Exception as e:
+        frappe.log_error(f"Errore in get_employee_tasks: {str(e)}")
+        return []
+
+
+@frappe.whitelist()
+def get_task_project(task_name):
+    """
+    Restituisce il progetto associato a un task
+    """
+    try:
+        if not task_name:
+            return None
+        
+        project = frappe.db.get_value("Task", task_name, "project")
+        return project
+        
+    except Exception as e:
+        frappe.log_error(f"Errore in get_task_project: {str(e)}")
+        return None
+
+
+@frappe.whitelist()
+def check_employee_has_tasks(employee, project):
+    """
+    Verifica se un employee ha task assegnate per un progetto specifico
+    """
+    try:
+        if not employee or not project:
+            return False
+        
+        # Controllo permessi basato sui ruoli
+        user_roles = frappe.get_roles(frappe.session.user)
+        is_manager = any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
+        
+        # Se non è manager, verifica che stia controllando per se stesso
+        if not is_manager and "Employee" in user_roles:
+            current_employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+            if employee != current_employee:
+                return False
+        
+        # Query per verificare se esistono task assegnate
+        query = """
+            SELECT COUNT(*) as count
+            FROM `tabTask` t
+            INNER JOIN `tabToDo` td ON td.reference_type = 'Task' AND td.reference_name = t.name
+            INNER JOIN `tabEmployee` e ON e.user_id = td.allocated_to
+            WHERE t.project = %(project)s
+            AND e.name = %(employee)s
+            AND t.status != 'Cancelled'
+            AND td.status = 'Open'
+        """
+        
+        result = frappe.db.sql(query, {
+            'employee': employee,
+            'project': project
+        }, as_dict=True)
+        
+        return result[0]['count'] > 0 if result else False
+        
+    except Exception as e:
+        frappe.log_error(f"Errore in check_employee_has_tasks: {str(e)}")
+        return False
+
+
 def has_permission():
     """
     Verifica se l'utente corrente ha i permessi per accedere all'app Advanced Timesheet Calendar
