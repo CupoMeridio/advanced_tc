@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"_1lC7hXFYh\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b><i class=\\\"fa fa-calendar text-extra-muted\\\"></i> Advanced Timesheet Calendar</b></span>\",\"col\":12}},{\"id\":\"_F8C2hXFYi\",\"type\":\"paragraph\",\"data\":{\"text\":\"<p>Gestione avanzata dei timesheet con calendario interattivo</p>\",\"col\":12}},{\"id\":\"_G9D3hXFYj\",\"type\":\"card\",\"data\":{\"card_name\":\"Advanced TC\",\"col\":4}}]",
+ "content": null,
  "creation": "2024-01-01 00:00:00.000000",
  "docstatus": 0,
  "doctype": "Workspace",
