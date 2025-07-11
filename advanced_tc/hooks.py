@@ -33,6 +33,15 @@ app_include_css = "/assets/advanced_tc/css/timesheet_calendar.css"
 # include js in page
 page_js = {"advanced_tc" : "public/js/timesheet_calendar.js"}
 
+# Desktop
+# -------
+
+# Desktop Icons
+# All icons will be displayed on the desktop
+desktop_icons = [
+	"advancedtc"
+]
+
 
 
 
