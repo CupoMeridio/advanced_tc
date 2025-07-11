@@ -498,20 +498,50 @@ class AdvancedTimesheetCalendar {
 					};
 				},
 				onchange: function() {
-					const task = dialog.get_value('task');
-					if (task) {
-						// Auto-compila il progetto quando si seleziona un task
-						frappe.call({
-							method: 'advanced_tc.api.timesheet_details.get_task_project',
-							args: { task_name: task },
-							callback: (r) => {
-								if (r.message) {
-							dialog.set_value('project', r.message);
-						}
+				const task = dialog.get_value('task');
+				const employee = dialog.get_value('employee');
+				if (task && employee) {
+					// Ottieni il progetto della task
+					frappe.call({
+						method: 'advanced_tc.api.timesheet_details.get_task_project',
+						args: { task_name: task },
+						callback: (r) => {
+							if (r.message) {
+								const taskProject = r.message;
+								
+								// Verifica se l'employee è assegnato al progetto della task
+								frappe.call({
+									method: 'frappe.client.get_list',
+									args: {
+										doctype: 'ToDo',
+										filters: {
+											reference_type: 'Project',
+											reference_name: taskProject,
+											allocated_to: frappe.session.user,
+											status: 'Open'
+										},
+										limit: 1
+									},
+									callback: (assignment_result) => {
+										if (assignment_result.message && assignment_result.message.length > 0) {
+											// L'employee è assegnato al progetto, può impostarlo
+											dialog.set_value('project', taskProject);
+										} else {
+											// L'employee non è assegnato al progetto
+											dialog.set_value('task', ''); // Reset task selection
+											frappe.msgprint({
+												title: 'Accesso Negato',
+												message: `Non puoi selezionare questa task perché non sei assegnato al progetto "${taskProject}". Contatta il tuo Project Manager per l'assegnazione al progetto.`,
+												indicator: 'red'
+											});
+										}
+									}
+								});
 							}
-						});
-					}
-				},
+						}
+					});
+				}
+			},
 				click: function() {
 					const project = dialog.get_value('project');
 					const employee = dialog.get_value('employee');
@@ -969,14 +999,44 @@ class AdvancedTimesheetCalendar {
 	},
 	onchange: function() {
 		const task = dialog.get_value('task');
-		if (task) {
-			// Auto-compila il progetto quando si seleziona un task
+		const employee = dialog.get_value('employee');
+		if (task && employee) {
+			// Ottieni il progetto della task
 			frappe.call({
 				method: 'advanced_tc.api.timesheet_details.get_task_project',
 				args: { task_name: task },
 				callback: (r) => {
 					if (r.message) {
-						dialog.set_value('project', r.message);
+						const taskProject = r.message;
+						
+						// Verifica se l'employee è assegnato al progetto della task
+						frappe.call({
+							method: 'frappe.client.get_list',
+							args: {
+								doctype: 'ToDo',
+								filters: {
+									reference_type: 'Project',
+									reference_name: taskProject,
+									allocated_to: frappe.session.user,
+									status: 'Open'
+								},
+								limit: 1
+							},
+							callback: (assignment_result) => {
+								if (assignment_result.message && assignment_result.message.length > 0) {
+									// L'employee è assegnato al progetto, può impostarlo
+									dialog.set_value('project', taskProject);
+								} else {
+									// L'employee non è assegnato al progetto
+									dialog.set_value('task', ''); // Reset task selection
+									frappe.msgprint({
+										title: 'Accesso Negato',
+										message: `Non puoi selezionare questa task perché non sei assegnato al progetto "${taskProject}". Contatta il tuo Project Manager per l'assegnazione al progetto.`,
+										indicator: 'red'
+									});
+								}
+							}
+						});
 					}
 				}
 			});

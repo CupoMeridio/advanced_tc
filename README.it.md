@@ -22,6 +22,8 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 
 5. **Gestione Pause Complessa**: Difficoltà nella gestione di break e pause pranzo all'interno delle attività
 
+6. **Validazione Task-Employee-Project Mancante**: ERPNext permette di creare task per un progetto e assegnarle a dipendenti che non sono associati a quel progetto, causando confusione nella gestione e problemi di controllo accessi
+
 #### ✅ **Soluzioni Implementate in AdvancedTC**
 
 - **Vista Calendario Moderna**: Interfaccia basata su FullCalendar.js con visualizzazione temporale intuitiva
@@ -29,6 +31,7 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 - **Filtri Avanzati**: Sistema di filtri integrato nella sidebar per una navigazione efficiente
 - **Export Intelligente**: Funzionalità di export CSV
 - **Gestione Pause Avanzata**: Supporto nativo per break con creazione automatica di attività separate
+- **Validazione Task-Employee-Project**: Sistema di controllo che impedisce l'assegnazione di task a dipendenti non associati al progetto
 - **Integrazione Completa**: Mantiene la compatibilità totale con il sistema ERPNext esistente
 
 ## 📑 Indice

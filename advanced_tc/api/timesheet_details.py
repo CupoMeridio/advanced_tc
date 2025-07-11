@@ -201,6 +201,37 @@ def create_timesheet_detail(data):
                 timesheet.end_date = timesheet_info["end_date"]
                 timesheet.company = data.get("company")
         
+        # Validazione: verifica che l'employee sia assegnato al progetto della task (se specificata)
+        task_name = data.get("task")
+        project_name = data.get("project")
+        employee_name = data.get("employee")
+        
+        if task_name and employee_name:
+            # Ottieni il progetto della task
+            task_project = frappe.db.get_value("Task", task_name, "project")
+            
+            if task_project:
+                # Verifica se l'employee è assegnato al progetto della task
+                is_assigned_to_project = frappe.db.exists("ToDo", {
+                    "reference_type": "Project",
+                    "reference_name": task_project,
+                    "allocated_to": frappe.db.get_value("Employee", employee_name, "user_id"),
+                    "status": "Open"
+                })
+                
+                if not is_assigned_to_project and not is_manager:
+                    frappe.throw(_("L'employee {0} non è assegnato al progetto {1} della task selezionata. Contattare HR per l'assegnazione.").format(
+                        frappe.db.get_value("Employee", employee_name, "employee_name"),
+                        frappe.db.get_value("Project", task_project, "project_name")
+                    ))
+                
+                # Se il progetto specificato non corrisponde al progetto della task
+                if project_name and project_name != task_project:
+                    frappe.throw(_("Il progetto selezionato ({0}) non corrisponde al progetto della task ({1}).").format(
+                        frappe.db.get_value("Project", project_name, "project_name"),
+                        frappe.db.get_value("Project", task_project, "project_name")
+                    ))
+        
         # Verifica sovrapposizioni con time_logs esistenti
         new_from_time = get_datetime(data.get("from_time"))
         new_to_time = get_datetime(data.get("to_time"))
@@ -292,6 +323,38 @@ def update_timesheet_detail(name, data):
             dt_str = re.sub(r'[+-]\d{2}:\d{2}$', '', dt_str)
             dt_str = dt_str.replace('Z', '')
             return get_datetime(dt_str)
+        
+        # Validazione: verifica che l'employee sia assegnato al progetto della task (se specificata)
+        task_name = data.get("task", doc.task)
+        project_name = data.get("project", doc.project)
+        timesheet = frappe.get_doc("Timesheet", doc.parent)
+        employee_name = timesheet.employee
+        
+        if task_name and employee_name:
+            # Ottieni il progetto della task
+            task_project = frappe.db.get_value("Task", task_name, "project")
+            
+            if task_project:
+                # Verifica se l'employee è assegnato al progetto della task
+                is_assigned_to_project = frappe.db.exists("ToDo", {
+                    "reference_type": "Project",
+                    "reference_name": task_project,
+                    "allocated_to": frappe.db.get_value("Employee", employee_name, "user_id"),
+                    "status": "Open"
+                })
+                
+                if not is_assigned_to_project and not is_manager:
+                    frappe.throw(_("L'employee {0} non è assegnato al progetto {1} della task selezionata. Contattare HR per l'assegnazione.").format(
+                        frappe.db.get_value("Employee", employee_name, "employee_name"),
+                        frappe.db.get_value("Project", task_project, "project_name")
+                    ))
+                
+                # Se il progetto specificato non corrisponde al progetto della task
+                if project_name and project_name != task_project:
+                    frappe.throw(_("Il progetto selezionato ({0}) non corrisponde al progetto della task ({1}).").format(
+                        frappe.db.get_value("Project", project_name, "project_name"),
+                        frappe.db.get_value("Project", task_project, "project_name")
+                    ))
         
         # Aggiorna i campi
         if "from_time" in data:

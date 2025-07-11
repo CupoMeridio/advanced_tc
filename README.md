@@ -22,6 +22,8 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 
 5. **Complex Break Management**: Difficulty in managing breaks and lunch breaks within activities
 
+6. **Missing Task-Employee-Project Validation**: ERPNext allows creating tasks for a project and assigning them to employees who are not associated with that project, causing confusion in management and access control issues
+
 #### ✅ **Solutions Implemented in AdvancedTC**
 
 - **Modern Calendar View**: Interface based on FullCalendar.js with intuitive temporal visualization
@@ -29,6 +31,7 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 - **Advanced Filters**: Integrated filter system in the sidebar for efficient navigation
 - **Smart Export**: CSV export functionality
 - **Advanced Break Management**: Native support for breaks with automatic creation of separate activities
+- **Task-Employee-Project Validation**: Control system that prevents assignment of tasks to employees not associated with the project
 - **Complete Integration**: Maintains full compatibility with the existing ERPNext system
 
 ## 📑 Table of Contents
