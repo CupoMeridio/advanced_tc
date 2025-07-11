@@ -33,6 +33,24 @@ app_include_css = "/assets/advanced_tc/css/timesheet_calendar.css"
 # include js in page
 page_js = {"advanced_tc" : "public/js/timesheet_calendar.js"}
 
+# Workspaces
+# ------------------
+
+workspaces = [
+	{
+		"module": "Advanced TC",
+		"app": "advanced_tc",
+		"label": "Advanced Timesheet Calendar",
+		"items": [
+			{
+				"type": "Page",
+				"name": "advanced_tc",
+				"label": "Advanced Timesheet Calendar"
+			}
+		]
+	}
+]
+
 # Installation
 # ------------
 

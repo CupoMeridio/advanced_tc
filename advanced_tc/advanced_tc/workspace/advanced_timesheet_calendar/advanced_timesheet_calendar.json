@@ -1,0 +1,51 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"_1lC7hXFYh\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b><i class=\\\"fa fa-calendar text-extra-muted\\\"></i> Advanced Timesheet Calendar</b></span>\",\"col\":12}},{\"id\":\"_F8C2hXFYi\",\"type\":\"paragraph\",\"data\":{\"text\":\"<p>Gestione avanzata dei timesheet con calendario interattivo</p>\",\"col\":12}},{\"id\":\"_G9D3hXFYj\",\"type\":\"card\",\"data\":{\"card_name\":\"Advanced TC\",\"col\":4}}]",
+ "creation": "2024-01-01 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "calendar",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Advanced TC",
+ "links": [
+  {
+   "dependencies": "",
+   "description": "Calendario avanzato per timesheet",
+   "hidden": 0,
+   "icon": "calendar",
+   "is_query_report": 0,
+   "label": "Advanced Timesheet Calendar",
+   "link_count": 0,
+   "link_to": "advanced_tc",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Advanced TC",
+ "name": "Advanced Timesheet Calendar",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "icon": "calendar",
+   "label": "Advanced TC",
+   "link_to": "advanced_tc",
+   "stats_filter": "{}",
+   "type": "Page"
+  }
+ ],
+ "title": "Advanced Timesheet Calendar"
+}
