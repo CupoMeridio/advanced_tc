@@ -1017,24 +1017,7 @@ handle_time_selection(info) {
 .calendar-container__sidebar--collapsed {
     /* Collapsed state */
 }
-```
-
-### Testing
-
-Before submitting a PR:
-
-```bash
-# Python tests
-python -m pytest tests/
-
-# JavaScript lint
-npm run lint
-
-# Manual testing
-# - Create/edit/delete activities
-# - Test drag & drop
-# - Test export
-```
+````
 
 ## 📝 License
 
@@ -1047,14 +1030,6 @@ This project is released under **GPL-3.0** license. See the `license.txt` file f
 - ✅ **Allowed**: Private use
 - ❗ **Required**: Maintain GPL-3.0 license
 - ❗ **Required**: Make source code available
-
-## 📞 Support
-
-### Support Channels
-
-- **GitHub Issues**: For bugs and feature requests
-- **Discussions**: For general questions
-- **Wiki**: For additional documentation
 
 ### Debug Information
 
@@ -1084,39 +1059,6 @@ A: Yes, modify the `get_event_color()` function in `api/timesheet_details.py`.
 **Q: How to export data for long periods?**
 A: Use filters to limit the dataset, then export to CSV.
 
-**Q: Does the app work with ERPNext Cloud?**
-A: Yes, but requires custom app installation (contact ERPNext support).
-
-## 📋 Changelog
-
-### v0.1.1 (Current)
-- ✅ **NEW**: "Generate Report" button in sidebar for direct export access
-- ✅ **IMPROVED**: Export functionality now fully accessible from UI
-- ✅ **UPDATED**: Documentation consolidated in single README file
-- ✅ Interactive calendar with FullCalendar.js
-- ✅ Complete ERPNext integration
-- ✅ Advanced filter system
-- ✅ Drag & drop for activity editing
-- ✅ CSV export and reporting
-- ✅ Break and pause management
-- ✅ Complete data validation
-
-### v0.1.0
-- ✅ Initial version with all base features
-- ✅ Interactive calendar with FullCalendar.js
-- ✅ Complete ERPNext integration
-- ✅ Advanced filter system
-- ✅ Drag & drop for activity editing
-- ✅ Break and pause management
-- ✅ Complete data validation
-
-### v0.0.1 (Initial)
-- ✅ Base project setup
-- ✅ ERPNext app structure
-- ✅ Hooks configuration
-- ✅ First basic APIs
-
----
 
 ## 🎓 Project Information
 
