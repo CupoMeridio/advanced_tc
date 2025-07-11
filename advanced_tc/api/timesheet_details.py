@@ -215,10 +215,7 @@ def create_timesheet_detail(data):
             
             # Controlla sovrapposizioni
             if (new_from_time < existing_to and new_to_time > existing_from):
-                frappe.throw(_("Time overlap detected with existing entry from {0} to {1}").format(
-                    existing_from.strftime("%H:%M"),
-                    existing_to.strftime("%H:%M")
-                ))
+                frappe.throw(_("Attività già presente per il giorno e fascia oraria selezionati."))
         
         # Aggiungere alla child table del timesheet
         timesheet_detail = timesheet.append("time_logs", {
@@ -255,6 +252,10 @@ def create_timesheet_detail(data):
         }
     
     except Exception as e:
+        # Se l'errore è già il nostro messaggio personalizzato, rilancialo senza modifiche
+        if "Attività già presente per il giorno e fascia oraria selezionati." in str(e):
+            raise e
+        
         frappe.log_error(f"Errore in create_timesheet_detail: {str(e)}")
         frappe.throw(_("Errore nella creazione: {0}").format(str(e)))
 
@@ -367,13 +368,30 @@ def delete_timesheet_detail(name):
             # Se non ci sono più time_logs, prova a eliminare il timesheet
             # Se l'utente non ha permessi, lascia il timesheet vuoto
             if timesheet.has_permission("delete"):
-                timesheet.delete()
-                frappe.db.commit()
-                return {
-                    "success": True,
-                    "timesheet_deleted": True,
-                    "message": "Activity and empty timesheet deleted successfully"
-                }
+                try:
+                    timesheet.delete()
+                    frappe.db.commit()
+                    return {
+                        "success": True,
+                        "timesheet_deleted": True,
+                        "message": "Activity and empty timesheet deleted successfully"
+                    }
+                except Exception as delete_error:
+                    # Controlla se l'errore è relativo ai permessi di eliminazione del timesheet
+                    error_msg = str(delete_error)
+                    if "time_logs" in error_msg.lower() or "timesheet" in error_msg.lower():
+                        # Verifica se l'utente è solo Employee
+                        user_roles = frappe.get_roles(frappe.session.user)
+                        is_employee_only = "Employee" in user_roles and not any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
+                        
+                        if is_employee_only:
+                            frappe.throw(_("Contatta il tuo Project Manager per eliminare il Timesheet"))
+                        else:
+                            # Per altri utenti, mostra l'errore originale
+                            raise delete_error
+                    else:
+                        # Per altri tipi di errore, rilancia l'eccezione originale
+                        raise delete_error
             else:
                 # L'utente non può eliminare il timesheet, ma può lasciarlo vuoto
                 # Salva il timesheet vuoto per mantenere la struttura
@@ -396,6 +414,18 @@ def delete_timesheet_detail(name):
     
     except Exception as e:
         frappe.log_error(f"Errore in delete_timesheet_detail: {str(e)}")
+        
+        # Controlla se l'errore è relativo ai permessi di eliminazione del timesheet
+        error_msg = str(e)
+        if "time_logs" in error_msg.lower() or ("timesheet" in error_msg.lower() and "delete" in error_msg.lower()):
+            # Verifica se l'utente è solo Employee
+            user_roles = frappe.get_roles(frappe.session.user)
+            is_employee_only = "Employee" in user_roles and not any(role in user_roles for role in ["System Manager", "HR Manager", "HR User"])
+            
+            if is_employee_only:
+                frappe.throw(_("Contatta il tuo Project Manager per eliminare il Timesheet"))
+        
+        # Per tutti gli altri errori, mostra il messaggio originale
         frappe.throw(_("Errore nell'eliminazione: {0}").format(str(e)))
 
 @frappe.whitelist()

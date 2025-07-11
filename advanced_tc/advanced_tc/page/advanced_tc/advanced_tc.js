@@ -689,6 +689,32 @@ class AdvancedTimesheetCalendar {
 			],
 			primary_action_label: 'Salva Impostazioni',
 			primary_action: (values) => {
+				// Validazione fascia oraria di pausa (solo se auto_enable_break è attivato)
+			if (values.auto_enable_break && values.default_break_start && values.default_break_end && 
+				values.default_work_start && values.default_work_end) {
+				
+				// Converti gli orari in minuti per il confronto
+				const timeToMinutes = (timeStr) => {
+					const [hours, minutes] = timeStr.split(':').map(Number);
+					return hours * 60 + minutes;
+				};
+				
+				const workStart = timeToMinutes(values.default_work_start);
+				const workEnd = timeToMinutes(values.default_work_end);
+				const breakStart = timeToMinutes(values.default_break_start);
+				const breakEnd = timeToMinutes(values.default_break_end);
+				
+				// Verifica che la pausa sia all'interno dell'orario lavorativo
+				if (breakStart < workStart || breakEnd > workEnd || breakStart >= breakEnd) {
+					frappe.msgprint({
+						title: 'Errore di validazione',
+						message: 'Fascia oraria di pausa al di fuori dell\'orario lavorativo.',
+						indicator: 'red'
+					});
+					return; // Non salvare se la validazione fallisce
+				}
+			}
+				
 				this.save_default_settings(values);
 				frappe.show_alert({
 			message: 'Impostazioni salvate correttamente!',
