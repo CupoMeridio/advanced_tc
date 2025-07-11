@@ -16,7 +16,7 @@ add_to_apps_screen = [
 		"name": "advanced_tc",
 		"logo": "/assets/advanced_tc/images/logo.svg",
 		"title": _("Advanced Timesheet Calendar"),
-		"route": "app/advanced_tc",
+		"route": "/app/home",
 		"has_permission": "advanced_tc.api.timesheet_details.has_permission"
 	}
 ]
@@ -33,22 +33,8 @@ app_include_css = "/assets/advanced_tc/css/timesheet_calendar.css"
 # include js in page
 page_js = {"advanced_tc" : "public/js/timesheet_calendar.js"}
 
-# Desktop
-# -------
-
-# Desktop Icons
-# All icons will be displayed on the desktop
-desktop_icons = [
-	"advancedtc"
-]
-
-
-
-
-
 # Installation
 # ------------
-
 
 after_install = "advanced_tc.install.after_install"
 
