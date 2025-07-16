@@ -8,11 +8,15 @@ def after_install():
     try:
         print("🚀 Inizializzazione Advanced Timesheet Calendar...")
         
+        # Aggiungi link alla workspace Projects
+        add_link_to_projects_workspace()
+        
         frappe.db.commit()
         print("✅ Installazione completata con successo!")
         print("ℹ️ L'app è accessibile tramite:")
         print("   • Link diretto: /app/advanced_tc")
         print("   • Icona nella sezione Apps del desktop ERPNext")
+        print("   • Link nella workspace Projects (sezione Settings)")
         
     except Exception as e:
         frappe.db.rollback()
@@ -22,9 +26,79 @@ def after_install():
 # Funzioni rimosse: create_custom_roles() e setup_permissions()
 # L'app ora utilizza i ruoli di base di ERPNext
 
+def add_link_to_projects_workspace():
+    """
+    Aggiunge il link all'Advanced Timesheet Calendar nella workspace Projects
+    """
+    try:
+        # Verifica se la workspace Projects esiste
+        if not frappe.db.exists("Workspace", "Projects"):
+            print("⚠️ Workspace Projects non trovata, salto l'aggiunta del link")
+            return
+        
+        # Carica la workspace Projects
+        workspace = frappe.get_doc("Workspace", "Projects")
+        
+        # Verifica se il link esiste già
+        link_exists = False
+        for link in workspace.links:
+            if link.link_to == "advanced_tc" and link.link_type == "Page":
+                link_exists = True
+                break
+        
+        if not link_exists:
+            # Aggiungi il nuovo link nella sezione Settings
+            new_link = {
+                "dependencies": "",
+                "hidden": 0,
+                "is_query_report": 0,
+                "label": "Advanced Timesheet Calendar",
+                "link_count": 0,
+                "link_to": "advanced_tc",
+                "link_type": "Page",
+                "onboard": 0,
+                "type": "Link"
+            }
+            
+            workspace.append("links", new_link)
+            workspace.save(ignore_permissions=True)
+            print("✅ Link aggiunto alla workspace Projects")
+        else:
+            print("ℹ️ Link già presente nella workspace Projects")
+            
+    except Exception as e:
+        frappe.log_error(f"Errore nell'aggiunta del link alla workspace Projects: {str(e)}", "Advanced TC Install")
+        print(f"⚠️ Errore nell'aggiunta del link alla workspace Projects: {str(e)}")
 
-
-
+def remove_link_from_projects_workspace():
+    """
+    Rimuove il link all'Advanced Timesheet Calendar dalla workspace Projects
+    """
+    try:
+        # Verifica se la workspace Projects esiste
+        if not frappe.db.exists("Workspace", "Projects"):
+            return
+        
+        # Carica la workspace Projects
+        workspace = frappe.get_doc("Workspace", "Projects")
+        
+        # Trova e rimuovi il link
+        links_to_remove = []
+        for i, link in enumerate(workspace.links):
+            if link.link_to == "advanced_tc" and link.link_type == "Page":
+                links_to_remove.append(i)
+        
+        # Rimuovi i link in ordine inverso per mantenere gli indici corretti
+        for i in reversed(links_to_remove):
+            workspace.links.pop(i)
+        
+        if links_to_remove:
+            workspace.save(ignore_permissions=True)
+            print("🗑️ Link rimosso dalla workspace Projects")
+            
+    except Exception as e:
+        frappe.log_error(f"Errore nella rimozione del link dalla workspace Projects: {str(e)}", "Advanced TC Uninstall")
+        print(f"⚠️ Errore nella rimozione del link dalla workspace Projects: {str(e)}")
 
 def before_uninstall():
     """
@@ -32,6 +106,9 @@ def before_uninstall():
     """
     try:
         print("🧹 Avvio pulizia Advanced Timesheet Calendar...")
+        
+        # Rimuovi link dalla workspace Projects
+        remove_link_from_projects_workspace()
         
         # Rimuovi workspace (se esistente da installazioni precedenti)
         workspace_name = "timesheet_calendar"
