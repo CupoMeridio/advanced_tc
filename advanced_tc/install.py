@@ -16,7 +16,7 @@ def after_install():
         print("ℹ️ L'app è accessibile tramite:")
         print("   • Link diretto: /app/advanced_tc")
         print("   • Icona nella sezione Apps del desktop ERPNext")
-        print("   • Shortcut 'Advanced Timesheet Calendar' nella sezione Your Shortcuts della workspace Projects")
+        print("   • Link 'Advanced Timesheet Calendar' nella sezione Time Tracking della workspace Projects")
         
     except Exception as e:
         frappe.db.rollback()
@@ -28,7 +28,7 @@ def after_install():
 
 def add_link_to_projects_workspace():
     """
-    Aggiunge il link all'Advanced Timesheet Calendar nella sezione Your Shortcuts della workspace Projects
+    Aggiunge il link all'Advanced Timesheet Calendar nella sezione Time Tracking della workspace Projects
     """
     try:
         # Verifica se la workspace Projects esiste
@@ -39,35 +39,56 @@ def add_link_to_projects_workspace():
         # Carica la workspace Projects
         workspace = frappe.get_doc("Workspace", "Projects")
         
-        # Verifica se il shortcut esiste già
-        shortcut_exists = False
-        for shortcut in workspace.shortcuts:
-            if shortcut.link_to == "advanced_tc" and shortcut.type == "Page":
-                shortcut_exists = True
+        # Verifica se il link esiste già nella sezione Time Tracking
+        for link in workspace.links:
+            if link.get("label") == "Advanced Timesheet Calendar" and link.get("link_to") == "advanced_tc" and link.get("type") == "Link":
+                print("ℹ️ Link 'Advanced Timesheet Calendar' già presente nella sezione Time Tracking della workspace Projects")
+                return
+        
+        # Trova l'indice del Card Break "Time Tracking"
+        time_tracking_index = None
+        for i, link in enumerate(workspace.links):
+            if link.get("type") == "Card Break" and link.get("label") == "Time Tracking":
+                time_tracking_index = i
                 break
         
-        if not shortcut_exists:
-            # Crea il nuovo shortcut
-            new_shortcut = {
-                "label": "Advanced Timesheet Calendar",
-                "link_to": "advanced_tc",
-                "type": "Page",
-                "color": "Green"
-            }
-            
-            workspace.append("shortcuts", new_shortcut)
-            workspace.save(ignore_permissions=True)
-            print("✅ Shortcut aggiunto alla sezione Your Shortcuts della workspace Projects")
-        else:
-            print("ℹ️ Shortcut già presente nella sezione Your Shortcuts")
+        if time_tracking_index is None:
+            print("⚠️ Sezione 'Time Tracking' non trovata nella workspace Projects")
+            return
+        
+        # Trova l'indice dove inserire il nuovo link (dopo l'ultimo link della sezione Time Tracking)
+        insert_index = time_tracking_index + 1
+        for i in range(time_tracking_index + 1, len(workspace.links)):
+            if workspace.links[i].get("type") == "Card Break":
+                insert_index = i
+                break
+            else:
+                insert_index = i + 1
+        
+        # Aggiungi il nuovo link nella sezione Time Tracking
+        new_link = {
+            "dependencies": "",
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Advanced Timesheet Calendar",
+            "link_count": 0,
+            "link_to": "advanced_tc",
+            "link_type": "Page",
+            "onboard": 0,
+            "type": "Link"
+        }
+        
+        workspace.links.insert(insert_index, new_link)
+        workspace.save(ignore_permissions=True)
+        print("✅ Link 'Advanced Timesheet Calendar' aggiunto nella sezione Time Tracking della workspace Projects")
             
     except Exception as e:
-        frappe.log_error(f"Errore nell'aggiunta del shortcut alla workspace Projects: {str(e)}", "Advanced TC Install")
-        print(f"⚠️ Errore nell'aggiunta del shortcut alla workspace Projects: {str(e)}")
+        frappe.log_error(f"Errore nell'aggiunta del link alla workspace Projects: {str(e)}", "Advanced TC Install")
+        print(f"⚠️ Errore nell'aggiunta del link alla workspace Projects: {str(e)}")
 
 def remove_link_from_projects_workspace():
     """
-    Rimuove il shortcut all'Advanced Timesheet Calendar dalla sezione Your Shortcuts della workspace Projects
+    Rimuove il link all'Advanced Timesheet Calendar dalla sezione Time Tracking della workspace Projects
     """
     try:
         # Verifica se la workspace Projects esiste
@@ -77,23 +98,23 @@ def remove_link_from_projects_workspace():
         # Carica la workspace Projects
         workspace = frappe.get_doc("Workspace", "Projects")
         
-        # Trova e rimuovi il shortcut
-        shortcuts_to_remove = []
-        for i, shortcut in enumerate(workspace.shortcuts):
-            if shortcut.link_to == "advanced_tc" and shortcut.type == "Page":
-                shortcuts_to_remove.append(i)
+        # Trova e rimuovi il link
+        links_to_remove = []
+        for i, link in enumerate(workspace.links):
+            if link.get("label") == "Advanced Timesheet Calendar" and link.get("link_to") == "advanced_tc" and link.get("type") == "Link":
+                links_to_remove.append(i)
         
-        # Rimuovi i shortcuts in ordine inverso per mantenere gli indici corretti
-        for i in reversed(shortcuts_to_remove):
-            workspace.shortcuts.pop(i)
+        # Rimuovi i links in ordine inverso per mantenere gli indici corretti
+        for i in reversed(links_to_remove):
+            workspace.links.pop(i)
         
-        if shortcuts_to_remove:
+        if links_to_remove:
             workspace.save(ignore_permissions=True)
-            print("🗑️ Shortcut rimosso dalla sezione Your Shortcuts della workspace Projects")
+            print("🗑️ Link rimosso dalla sezione Time Tracking della workspace Projects")
             
     except Exception as e:
-        frappe.log_error(f"Errore nella rimozione del shortcut dalla workspace Projects: {str(e)}", "Advanced TC Uninstall")
-        print(f"⚠️ Errore nella rimozione del shortcut dalla workspace Projects: {str(e)}")
+        frappe.log_error(f"Errore nella rimozione del link dalla workspace Projects: {str(e)}", "Advanced TC Uninstall")
+        print(f"⚠️ Errore nella rimozione del link dalla workspace Projects: {str(e)}")
 
 def before_uninstall():
     """
