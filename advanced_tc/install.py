@@ -42,7 +42,7 @@ def add_link_to_projects_workspace():
         # Verifica se il shortcut esiste già
         shortcut_exists = False
         for shortcut in workspace.shortcuts:
-            if shortcut.link_to == "advanced_tc" and shortcut.type == "Page":
+            if shortcut.link_to == "/app/advanced_tc" and shortcut.type == "URL":
                 shortcut_exists = True
                 break
         
@@ -50,8 +50,8 @@ def add_link_to_projects_workspace():
             # Crea il nuovo shortcut
             new_shortcut = {
                 "label": "Advanced Timesheet Calendar",
-                "link_to": "advanced_tc",
-                "type": "Page",
+                "link_to": "/app/advanced_tc",
+                "type": "URL",
                 "color": "Green"
             }
             
@@ -80,7 +80,7 @@ def remove_link_from_projects_workspace():
         # Trova e rimuovi il shortcut
         shortcuts_to_remove = []
         for i, shortcut in enumerate(workspace.shortcuts):
-            if shortcut.link_to == "advanced_tc" and shortcut.type == "Page":
+            if shortcut.link_to == "/app/advanced_tc" and shortcut.type == "URL":
                 shortcuts_to_remove.append(i)
         
         # Rimuovi i shortcuts in ordine inverso per mantenere gli indici corretti
