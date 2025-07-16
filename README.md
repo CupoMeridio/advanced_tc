@@ -16,11 +16,13 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 
 2. **Unintuitive Interface**: Timesheet Detail management occurs through traditional forms, without drag & drop or visual editing
 
-3. **Limited Filters**: The base system doesn't offer advanced filters for Employee, Project and Activity Type in a single view
+3. **Limited Filters**: The base system doesn't offer advanced filters for Employee, Project, Activity Type and Task in a single view
 
 4. **Limited Export**: Lack of custom CSV export functionality with detailed statistics
 
 5. **Complex Break Management**: Difficulty in managing breaks and lunch breaks within activities
+
+6. **Missing Task-Employee-Project Validation**: ERPNext allows creating tasks for a project and assigning them to employees who are not associated with that project, causing confusion in management and access control issues
 
 #### ✅ **Solutions Implemented in AdvancedTC**
 
@@ -29,6 +31,7 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 - **Advanced Filters**: Integrated filter system in the sidebar for efficient navigation
 - **Smart Export**: CSV export functionality
 - **Advanced Break Management**: Native support for breaks with automatic creation of separate activities
+- **Task-Employee-Project Validation**: Control system that prevents assignment of tasks to employees not associated with the project
 - **Complete Integration**: Maintains full compatibility with the existing ERPNext system
 
 ## 📑 Table of Contents
@@ -37,26 +40,33 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 2. [Key Features](#-key-features)
 3. [Prerequisites](#-prerequisites)
 4. [Installation](#-installation)
-5. [Usage](#-usage)
-6. [Technical Architecture](#-technical-architecture)
-7. [Detailed Features](#-detailed-features)
-8. [Customization](#-customization)
-9. [Advanced Configuration](#-advanced-configuration)
-10. [Troubleshooting](#-troubleshooting)
-11. [Testing](#-testing)
-12. [Advanced Features](#-advanced-features)
-13. [Contributing](#-contributing)
-14. [License](#-license)
-15. [Support](#-support)
-16. [Changelog](#-changelog)
+5. [Accessing the Application](#-accessing-the-application)
+6. [Configuration Verification](#-configuration-verification)
+7. [Project Access Control](#-project-access-control)
+8. [Troubleshooting](#-troubleshooting)
+9. [Usage](#-usage)
+10. [Technical Architecture](#-technical-architecture)
+11. [Detailed Features](#-detailed-features)
+12. [Customization](#-customization)
+13. [Configuration](#-configuration)
+14. [Troubleshooting](#-troubleshooting-1)
+15. [Additional Features](#-additional-features)
+16. [Additional Resources](#-additional-resources)
+17. [Contributing](#-contributing)
+18. [License](#-license)
+19. [Support](#-support)
+20. [Changelog](#-changelog)
+21. [Project Information](#-project-information)
 
 ## 🎯 Key Features
 
 - **Interactive Calendar View**: Modern visualization with FullCalendar.js
-- **Advanced Filters**: Employee, Project
+- **Advanced Filters**: Employee, Project, Activity Type and Task with role-based visibility
 - **Complete CRUD Management**: Create, edit, delete activities
 - **Drag & Drop**: Move and resize activities
 - **ERPNext Integration**: Complete with Timesheet and Timesheet Detail
+- **Project Assignment System**: Uses ERPNext's "Assign To" functionality for project access control
+- **Role-Based Access**: Managers see all projects, employees only see assigned projects
 - **Export and Reporting**: CSV export
 - **Break Management**: Complete support for breaks and lunch breaks
 - **Customization**: Dynamic colors and advanced configurations
@@ -118,6 +128,30 @@ bench --site [site-name] migrate
 bench restart
 ```
 
+## 🚀 Accessing the Application
+
+After successful installation, you can access Advanced Timesheet Calendar in two ways:
+
+### 1. Apps Section (Recommended)
+- Navigate to your ERPNext desktop
+- Click on the **"Apps"** section
+- Look for the **"Advanced Timesheet Calendar"** icon with a calendar symbol
+- Click the icon to launch the application
+
+### 2. Direct Link
+- Navigate directly to: `https://your-site.com/app/advanced_tc`
+- Or use the relative path: `/app/advanced_tc`
+
+### First Time Setup
+
+**For Managers:**
+- You will immediately see all open projects in the calendar
+- Use ERPNext's "Assign To" feature to assign projects to employees
+
+**For Employees:**
+- If no projects are assigned, you'll see a message to contact HR
+- Once projects are assigned, you'll see only your assigned projects
+
 ## ✅ Configuration Verification
 
 ### Required File Structure
@@ -130,35 +164,79 @@ advanced_tc/
 │   ├── __init__.py                    # App version (0.0.1)
 │   ├── hooks.py                       # App configuration
 │   ├── modules.txt                    # Modules (advanced_tc)
+│   ├── patches.txt                    # Database patches
 │   ├── install.py                     # Installation script
+│   ├── pyproject.toml                 # Python project config
 │   ├── api/
+│   │   ├── __init__.py
 │   │   └── timesheet_details.py       # Backend API
 │   ├── public/
+│   │   ├── .gitkeep
 │   │   ├── css/
 │   │   │   └── timesheet_calendar.css # CSS styles
+│   │   ├── images/                    # Image assets
 │   │   └── js/
 │   │       └── timesheet_calendar.js  # JS utilities
-│   ├── config/
-│   │   ├── desktop.py                 # Desktop configuration
-│   │   └── workspace.py               # Workspace configuration
+│   ├── config/                        # Configuration files (empty)
+│   ├── templates/
+│   │   ├── __init__.py
+│   │   └── pages/                     # Template pages
 │   └── advanced_tc/
+│       ├── .frappe                    # Frappe metadata
+│       ├── __init__.py
 │       └── page/
 │           └── advanced_tc/
+│               ├── __init__.py
 │               ├── advanced_tc.json   # Page configuration
 │               └── advanced_tc.js     # Frontend logic
+├── .gitignore                         # Git ignore rules
+├── .pre-commit-config.yaml            # Pre-commit hooks
 ├── setup.py                           # Python setup
 ├── pyproject.toml                     # Project configuration
-├── README.md                          # Documentation
-└── license.txt                        # License
+├── README.md                          # Documentation (English)
+├── README.it.md                       # Documentation (Italian)
+├── license.txt                        # License
+
 ```
 
 ### Key Components
 
 1. **hooks.py**: Configures app_name="advanced_tc", CSS, JS and workspace
-2. **install.py**: Creates roles, permissions, Activity Types and workspace
-3. **advanced_tc.json**: Defines the main page
-4. **API**: Endpoints for timesheet details management
-5. **Frontend**: JavaScript for interactive calendar
+2. **install.py**: Installation script with informative messages
+3. **advanced_tc.json**: Defines the main page configuration
+4. **advanced_tc.js**: Frontend logic for interactive calendar
+5. **timesheet_details.py**: Backend API endpoints for timesheet management
+6. **timesheet_calendar.css/js**: Styling and utility functions for the calendar
+
+## 🔐 Project Access Control
+
+### Role-Based Project Visibility
+
+AdvancedTC implements a sophisticated project access control system using ERPNext's native "Assign To" functionality:
+
+#### **For Managers** (System Manager, HR Manager, HR User)
+- **Full Access**: Can view and create activities for all open projects
+- **No Restrictions**: Complete project visibility in filters and dialogs
+- **Assignment Control**: Can assign projects to employees using ERPNext's "Assign To" feature
+
+#### **For Employees**
+- **Restricted Access**: Can only view projects assigned to them via "Assign To"
+- **Automatic Filtering**: Project filters and activity creation dialogs show only assigned projects
+- **No Assignment Access**: If no projects are assigned, they see an empty list with instructions to contact HR
+
+### How to Assign Projects to Employees
+
+1. **Navigate to Project**: Go to any Project document in ERPNext
+2. **Use Assign To**: Click the "Assign To" button in the sidebar
+3. **Select Employee**: Choose the employee(s) to assign to the project
+4. **Automatic Access**: The employee will immediately see the project in AdvancedTC
+
+### Security Features
+
+- **No Fallback Access**: Employees without assignments cannot see any projects
+- **Clear Messaging**: Users are informed when they need HR assistance for project assignment
+- **Consistent Filtering**: Same access rules apply to sidebar filters and activity creation dialogs
+- **ERPNext Integration**: Uses native ERPNext ToDo system for assignments
 
 ## 🔧 Troubleshooting
 
@@ -201,7 +279,7 @@ bench --site [site-name] install-app advanced_tc
 
 **Verify**:
 1. **Python Version**: Make sure to use Python 3.10+
-2. **Permissions**: Verify permissions on Timesheet doctypes
+2. **Permissions**: Verify ERPNext base permissions on Timesheet doctypes
 3. **Dependencies**: Check that ERPNext v15+ is installed
 4. **Logs**: Check logs for specific errors
 
@@ -215,7 +293,7 @@ tail -f /path/to/frappe-bench/logs/worker.log
 
 **Verify**:
 1. **Migration**: Make sure migration is completed
-2. **User permissions**: Verify user has necessary roles
+2. **User permissions**: Verify user has necessary ERPNext base roles
 3. **Cache**: Clear browser cache
 4. **Restart**: Completely restart the bench
 
@@ -241,8 +319,10 @@ bench restart
 ### Main Features
 
 #### 🔍 Advanced Filters
-- **Employee**: Filter by specific employee
-- **Project**: Filter by project
+- **Employee**: Filter by specific employee (managers see all, employees see only themselves)
+- **Project**: Filter by project (based on "Assign To" assignments)
+- **Activity Type**: Filter by activity type
+- **Task**: Filter by specific task
 
 #### ➕ Adding Activities
 1. **Click** "Add Activity" or select a time range in the calendar
@@ -282,20 +362,7 @@ The export functionality is accessible through the **"Generate Report"** button 
    - Breakdown by activity type
 5. **Click** "Export CSV" to download data in CSV format
 
-**Technical Implementation:**
-```javascript
-// Function in advanced_tc.js file
-show_report_dialog() {
-    const events = this.calendar.getEvents();
-    const view = this.calendar.view;
-    const startDate = view.activeStart;
-    const endDate = view.activeEnd;
-    
-    if (window.TimesheetCalendarUtils && window.TimesheetCalendarUtils.showSummaryDialog) {
-        window.TimesheetCalendarUtils.showSummaryDialog(events, startDate, endDate);
-    }
-}
-```
+
 
 #### ⚙️ Settings
 1. **Click** "Settings" in the sidebar
@@ -413,360 +480,114 @@ window.TimesheetCalendarUtils = {
 
 ### 1. Weekly Timesheet Management
 
-#### Automatic Logic
-
 The app implements intelligent timesheet management:
 
-1. **Automatic Creation**: When creating a new activity, the app:
-   - Calculates the week start (Monday)
-   - Searches for an existing timesheet for that week
-   - If it doesn't exist, automatically creates a new weekly timesheet
-
-2. **Work Week Management**:
-   ```python
-   def get_week_start_date(date):
-       """Calculate week start (Monday)"""
-       if isinstance(date, str):
-           date = getdate(date)
-       days_since_monday = date.weekday()
-       week_start = date - timedelta(days=days_since_monday)
-       return week_start
-   ```
-
-3. **Smart Deletion**: When deleting the last activity of a timesheet, the app automatically deletes the empty timesheet as well.
+- **Automatic Creation**: Creates weekly timesheets automatically when needed
+- **Work Week Management**: Automatically calculates week start (Monday)
+- **Smart Deletion**: Removes empty timesheets automatically
 
 ### 2. Dynamic Color System
 
-#### Assignment Algorithm
+Each project automatically receives a consistent color:
 
-Each project automatically receives a color based on:
-
-```python
-def get_event_color(project):
-    if not project:
-        return "#95a5a6"  # Default gray
-    
-    # Generate MD5 hash of project name
-    import hashlib
-    hash_object = hashlib.md5(project.encode())
-    hash_hex = hash_object.hexdigest()
-    
-    # Select color from palette
-    color_index = int(hash_hex, 16) % len(colors)
-    return colors[color_index]
-```
-
-**Advantages**:
-- Same project = same color always
-- Uniform color distribution
-- No manual configuration required
+- **Consistent Colors**: Same project = same color always
+- **Uniform Distribution**: Algorithm distributes colors evenly
+- **No Configuration**: Works automatically without setup
 
 ### 3. Validation and Controls
 
-#### Overlap Control
+The app includes automatic controls to ensure data quality:
 
-The app prevents time overlaps:
-
-```python
-# Check overlaps with existing time_logs
-for existing_log in timesheet.time_logs:
-    existing_from = existing_log.from_time
-    existing_to = existing_log.to_time
-    
-    # Check overlaps
-    if (new_from_time < existing_to and new_to_time > existing_from):
-        frappe.throw(_("Time overlap detected with existing entry"))
-```
-
-#### Frontend Validation
-
-```javascript
-validateTimeRange: function(fromTime, toTime) {
-    const from = new Date(fromTime);
-    const to = new Date(toTime);
-    
-    if (from >= to) {
-        return {
-            valid: false,
-            message: 'End time must be after start time'
-        };
-    }
-    
-    const diffHours = (to - from) / (1000 * 60 * 60);
-    if (diffHours > 24) {
-        return {
-            valid: false,
-            message: 'Activity cannot be longer than 24 hours'
-        };
-    }
-    
-    return { valid: true };
-}
-```
+- **Overlap Control**: Prevents time overlaps between activities
+- **Time Validation**: Verifies that times are logical and valid
+- **Permission Control**: Verifies user can modify the data
+- **Duration Validation**: Checks that activities have reasonable duration
 
 ### 4. Advanced Drag & Drop
 
-#### FullCalendar Event Handlers
+Intuitive drag functionality:
 
-```javascript
-eventDrop: (info) => {
-    this.update_activity(info.event);
-},
-
-eventResize: (info) => {
-    this.update_activity(info.event);
-},
-
-update_activity(event) {
-    const data = {
-        from_time: event.start.toISOString(),
-        to_time: event.end.toISOString()
-    };
-    
-    this.update_activity_data(event.id, data);
-}
-```
-
-#### Visual Feedback
-
-- **Toast Notifications**: Operation confirmation
-- **Loading States**: During updates
-- **Error Handling**: Automatic rollback on error
+- **Move Activities**: Drag to change date and time
+- **Resize**: Modify duration by dragging borders
+- **Visual Feedback**: Notifications and loading states
+- **Automatic Rollback**: Cancels changes on error
 
 ### 5. Filter System
 
-#### Available Filters
+Advanced filters for efficient navigation:
 
-1. **Employee**: Filter by specific employee
-2. **Project**: Filter by project
-3. **Activity Type**: Filter by activity type
-4. **Task**: Filter by specific task
-
-#### Backend Implementation
-
-```python
-# Additional filters
-if filters:
-    if filters.get("employee"):
-        conditions.append("ts.employee = %(employee)s")
-        values["employee"] = filters["employee"]
-    
-    if filters.get("project"):
-        conditions.append("tsd.project = %(project)s")
-        values["project"] = filters["project"]
-    
-    # ... other filters
-```
+- **Employee**: Filter by employee (with permission control)
+- **Project**: Filter by project (based on assignments)
+- **Activity Type**: Filter by activity type
+- **Task**: Filter by specific task
+- **Combinations**: Use multiple filters simultaneously
 
 ### 6. Advanced Export and Reporting
 
-#### CSV Export Functionality
+Complete export and analysis functionality:
 
-```javascript
-exportToCSV: function(activities, filename = 'timesheet_details.csv') {
-    const headers = [
-        'Date', 'Employee', 'Project', 'Task', 
-        'Activity Type', 'From Time', 'To Time', 
-        'Hours', 'Description'
-    ];
-    
-    const rows = activities.map(activity => {
-        const props = activity.extendedProps;
-        return [
-            new Date(activity.start).toLocaleDateString(),
-            props.employee_name || props.employee,
-            props.project_name || props.project || '',
-            props.task_subject || props.task || '',
-            props.activity_type || '',
-            new Date(activity.start).toLocaleTimeString(),
-            new Date(activity.end).toLocaleTimeString(),
-            props.hours || 0,
-            props.description || ''
-        ];
-    });
-    
-    // Generate and download CSV
-    const csvContent = [headers, ...rows]
-        .map(row => row.map(field => `"${field}"`).join(','))
-        .join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-```
-
-#### Summary Dialog
-
-```javascript
-showSummaryDialog: function(events, startDate, endDate) {
-    // Calculate statistics
-    const stats = this.calculateStatistics(events);
-    
-    // Create dialog with:
-    // - Total period hours
-    // - Breakdown by employee
-    // - Breakdown by project
-    // - Breakdown by activity type
-    // - Export CSV button
-}
-```
+- **CSV Export**: Export data in CSV format with all details
+- **Summary Dialog**: Display statistics for selected period
+- **Detailed Breakdown**: Analysis by employee, project and activity type
+- **Export Filters**: Export only filtered data
 
 ### 7. Break and Pause Management
 
-#### Break Fields in Dialog
+Complete support for break management:
 
-- **Break Start**: Break start time
-- **Break End**: Break end time
+- **Break Start/End**: Define break times within activity
 - **Automatic Calculation**: Break hours are subtracted from total
-
-#### Break Validation
-
-```javascript
-validateBreakTimes: function(activityStart, activityEnd, breakStart, breakEnd) {
-    // Verify break is within activity
-    // Verify break start < break end
-    // Calculate actual work hours
-}
-```
+- **Validation**: Automatic checks for valid break times
+- **Actual Hours**: Precise calculation of worked hours
 
 ## 🎨 Customization
 
-### Activity Colors
+The app offers various customization options:
 
-Activity colors are defined dynamically:
+### Visual Customization
+- **Automatic Colors**: Dynamic color assignment for projects
+- **Responsive Interface**: Adapts to different screen sizes
+- **Theme Support**: Compatible with ERPNext themes
+- **Custom Styling**: Modify CSS for personalized appearance
 
-```python
-# Default color palette
-colors = [
-    "#3498db",  # Blue
-    "#e74c3c",  # Red
-    "#f39c12",  # Orange
-    "#2ecc71",  # Green
-    "#9b59b6",  # Purple
-    "#1abc9c",  # Turquoise
-    "#34495e",  # Dark gray
-    "#e67e22"   # Dark orange
-]
-```
+### Extensibility
+- **Modular Architecture**: Easy to extend with new features
+- **API Integration**: Add custom endpoints as needed
+- **Event Hooks**: Integrate with ERPNext workflows
+- **Custom Fields**: Support for additional data fields
 
-### Custom CSS
-
-**File**: `public/css/timesheet_calendar.css`
-
-```css
-/* Calendar customization */
-.fc-event {
-    border-radius: 4px;
-    border: none;
-    padding: 2px 4px;
-}
-
-/* Filter styles */
-.filter-section {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .calendar-container {
-        padding: 10px;
-    }
-}
-```
-
-### Additional Features
-
-To add new features:
-
-1. **Extend the main class**:
-   ```javascript
-   class CustomTimesheetCalendar extends AdvancedTimesheetCalendar {
-       // New features
-   }
-   ```
-
-2. **Add new API endpoints**:
-   ```python
-   @frappe.whitelist()
-   def custom_function():
-       # Custom logic
-   ```
-
-3. **Modify CSS** for new styles
-
-## 🔧 Advanced Configuration
+## 🔧 Configuration
 
 ### Permissions
 
-Make sure users have appropriate permissions:
+The app uses ERPNext standard roles and permissions:
 
-```json
-{
-    "Timesheet": ["read", "write", "create"],
-    "Timesheet Detail": ["read", "write", "create", "delete"],
-    "Employee": ["read"],
-    "Project": ["read"],
-    "Task": ["read"],
-    "Activity Type": ["read"]
-}
-```
+**Required ERPNext Roles:**
+- `Employee`: Basic timesheet access for own records
+- `HR User`: Extended HR functionality
+- `HR Manager`: Full HR management capabilities
+- `System Manager`: Complete system access
 
-### Performance
+**Required DocType Access:**
+- Timesheet, Timesheet Detail, Employee, Project, Task, Activity Type
 
-For sites with lots of data:
+### Performance Optimization
 
-1. **Database Indexes**:
-   ```sql
-   CREATE INDEX idx_timesheet_detail_date ON `tabTimesheet Detail` (date);
-   CREATE INDEX idx_timesheet_employee ON `tabTimesheet` (employee);
-   ```
+For optimal performance with large datasets:
 
-2. **Pagination**:
-   ```python
-   # Limit results by period
-   limit_days = 90  # Maximum 3 months
-   ```
-
-3. **Cache**:
-   ```python
-   # Cache for frequent filters
-   @frappe.cache()
-   def get_employees():
-       return frappe.get_all("Employee", fields=["name", "employee_name"])
-   ```
+- **Period Filters**: Use date range filters to limit data
+- **Database Optimization**: Automatic indexing for faster queries
+- **Caching**: Intelligent caching of frequently accessed data
+- **Pagination**: Efficient data loading for large result sets
 
 ### Default Configurations
 
-**File**: `hooks.py`
+The app includes sensible defaults:
 
-```python
-# App configurations
-app_include_css = [
-    "/assets/advanced_tc/css/timesheet_calendar.css"
-]
-
-app_include_js = [
-    "/assets/advanced_tc/js/advanced_tc.js",
-    "/assets/advanced_tc/js/timesheet_calendar.js"
-]
-
-# Default activity types
-default_activity_types = [
-    "Development",
-    "Testing", 
-    "Meeting",
-    "Documentation",
-    "Support",
-    "Training"
-]
-```
+- **CSS and JavaScript**: Automatically loaded assets
+- **Activity Types**: Pre-configured common activity types
+- **Calendar Settings**: Optimized for business use
+- **Performance**: Efficient caching and indexing
 
 ## 🐛 Troubleshooting
 
@@ -774,250 +595,80 @@ default_activity_types = [
 
 #### 1. Calendar doesn't load
 
-**Symptoms**: 
-- White or empty page
-- JavaScript errors in browser console
-- Calendar not rendering
-
 **Solutions**:
-
-1. **Rebuild and restart the system**:
-   ```bash
-   bench build
-   bench restart
-   ```
-
-2. **Verify user permissions**:
-   ```bash
-   bench --site [site-name] console
-   >>> frappe.get_roles("[username]")
-   ```
-   User must have at least the roles: `Employee`, `System Manager` or custom roles with Timesheet access.
-
-3. **Clear browser cache**:
-   - Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
-   - Or open developer tools (F12) and right-click refresh button → "Empty cache and reload"
-
-4. **Check browser console**:
-   - Open developer tools (F12)
-   - Go to "Console" tab
-   - Look for errors related to FullCalendar or missing JavaScript files
+- Rebuild and restart: `bench build && bench restart`
+- Verify user has appropriate ERPNext roles
+- Clear browser cache (Ctrl+Shift+R)
+- Check browser console for JavaScript errors
 
 #### 2. API Errors
 
-**Symptoms**: 500 errors or timeouts
-
-**Debug**:
-```python
-# Enable detailed logging
-import frappe
-frappe.log_error("Debug info", "Timesheet Calendar")
-
-# Check SQL queries
-frappe.db.sql("SELECT * FROM tabTimesheet LIMIT 1", debug=1)
-```
+**Solutions**:
+- Check ERPNext error logs
+- Verify user permissions for Timesheet DocType
+- Ensure proper site configuration
 
 #### 3. Styles not applied
 
 **Solutions**:
-```bash
-# Recompile assets
-bench build --app advanced_tc
-
-# Verify CSS path
-ls -la sites/assets/advanced_tc/css/
-
-# Hard refresh browser
-Ctrl+F5 (Windows) / Cmd+Shift+R (Mac)
-```
+- Recompile assets: `bench build --app advanced_tc`
+- Hard refresh browser (Ctrl+F5)
+- Check CSS file paths
 
 #### 4. Drag & Drop Issues
 
 **Common causes**:
 - Insufficient permissions
-- Time overlaps
-- Failed validation
+- Time overlaps with existing activities
+- Validation errors
 
-**Debug**:
-```javascript
-// Browser console
-console.log("Event drop:", info.event);
-console.log("New time:", info.event.start, info.event.end);
-```
+**Solutions**:
+- Check user permissions
+- Verify no time conflicts
+- Review activity validation rules
 
-### Advanced Debug
+For advanced debugging and development, the app includes:
 
-#### Backend Logging
+- **Backend Logging**: Detailed error tracking and debugging
+- **Frontend Logging**: Browser console debugging tools
+- **Testing Framework**: Unit and integration tests
+- **Development Tools**: Code quality and testing utilities
 
-```python
-# In api/timesheet_details.py
-import frappe
-import json
+## 🚀 Additional Features
 
-def debug_log(message, data=None):
-    frappe.log_error(
-        json.dumps({
-            "message": message,
-            "data": data,
-            "user": frappe.session.user
-        }), 
-        "AdvancedTC Debug"
-    )
-```
+### Advanced Break Management
+- **Automatic Break Rules**: Configurable break policies
+- **Net Hours Calculation**: Precise work time calculation
+- **Break Validation**: Ensures breaks are within activity time
 
-#### Frontend Logging
-
-```javascript
-// In advanced_tc.js
-class DebugLogger {
-    static log(message, data) {
-        if (window.location.hostname === 'localhost') {
-            console.log(`[AdvancedTC] ${message}`, data);
-        }
-    }
-}
-```
-
-## 🧪 Testing
-
-### Unit Tests
-
-**File**: `tests/test_timesheet_details.py`
-
-```python
-import unittest
-import frappe
-from advanced_tc.api.timesheet_details import create_timesheet_detail
-
-class TestTimesheetDetails(unittest.TestCase):
-    def setUp(self):
-        # Setup test data
-        pass
-    
-    def test_create_activity(self):
-        # Test activity creation
-        pass
-    
-    def test_overlap_validation(self):
-        # Test overlap validation
-        pass
-```
-
-### Integration Tests
-
-```python
-def test_weekly_timesheet_creation():
-    """Test automatic weekly timesheet creation"""
-    # Create activity for new week
-    # Verify timesheet creation
-    # Verify hours calculation
-```
-
-### Frontend Tests
-
-```javascript
-// Test with Jest or similar
-describe('AdvancedTimesheetCalendar', () => {
-    test('should initialize calendar', () => {
-        // Test initialization
-    });
-    
-    test('should handle time selection', () => {
-        // Test time selection
-    });
-});
-```
-
-## 🚀 Advanced Features
-
-### 1. Advanced Break Management
-
-#### Automatic Break Configuration
-
-```python
-# Automatic break configuration
-AUTO_BREAK_RULES = {
-    "lunch_break": {
-        "min_duration_hours": 6,
-        "break_duration_minutes": 30,
-        "break_start_time": "12:00"
-    }
-}
-```
-
-#### Net Hours Calculation
-
-```javascript
-calculateNetHours: function(startTime, endTime, breakStart, breakEnd) {
-    const totalMs = endTime - startTime;
-    const breakMs = breakEnd && breakStart ? breakEnd - breakStart : 0;
-    return (totalMs - breakMs) / (1000 * 60 * 60); // Net hours
-}
-```
-
-### 2. Keyboard Shortcuts
-
-Available keyboard shortcuts:
+### Keyboard Shortcuts
 - **Ctrl+N**: Create new activity
 - **Ctrl+R**: Refresh calendar
+- **Esc**: Close dialogs
+
+## 📚 Additional Resources
+
+- **[📖 Technical Documentation](TECHNICAL_DOCUMENTATION.md)** - Detailed technical architecture, API reference, and development guide
+- [ERPNext Documentation](https://docs.erpnext.com/)
+- [Frappe Framework Documentation](https://frappeframework.com/docs)
+- [FullCalendar.js Documentation](https://fullcalendar.io/docs)
 
 ## 🤝 Contributing
 
-### Contribution Process
+Contributions are welcome! Please follow these steps:
 
 1. **Fork** the project
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
+2. **Create** a feature branch
+3. **Commit** your changes with clear messages
+4. **Test** your changes thoroughly
+5. **Submit** a Pull Request
 
 ### Development Guidelines
 
-#### Python Code
-
-```python
-# Follow PEP 8
-# Use docstrings
-def create_timesheet_detail(data):
-    """Create a new timesheet activity.
-    
-    Args:
-        data (dict): Activity data
-        
-    Returns:
-        dict: Operation result
-        
-    Raises:
-        ValidationError: If data is not valid
-    """
-```
-
-#### JavaScript Code
-
-```javascript
-// Use ES6+
-// Comment complex functions
-/**
- * Handles time range selection in the calendar
- * @param {Object} info - FullCalendar selection info
- */
-handle_time_selection(info) {
-    // Implementation
-}
-```
-
-#### CSS
-
-```css
-/* Use BEM methodology */
-.calendar-container__sidebar {
-    /* Sidebar styles */
-}
-
-.calendar-container__sidebar--collapsed {
-    /* Collapsed state */
-}
-````
+- Follow ERPNext coding standards
+- Include appropriate documentation
+- Test all functionality before submitting
+- Ensure compatibility with latest ERPNext version
 
 ## 📝 License
 

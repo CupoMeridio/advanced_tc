@@ -110,7 +110,13 @@ window.TimesheetCalendarUtils = {
             dailyTotals: {}
         };
         
-        activities.forEach(activity => {
+        // Filtra gli eventi che rientrano nel range di date della vista corrente
+        const filteredActivities = activities.filter(activity => {
+            const activityStart = new Date(activity.start);
+            return activityStart >= startDate && activityStart < endDate;
+        });
+        
+        filteredActivities.forEach(activity => {
             const hours = activity.extendedProps.hours || 0;
             const employee = activity.extendedProps.employee;
             const project = activity.extendedProps.project;
@@ -204,6 +210,12 @@ window.TimesheetCalendarUtils = {
     showSummaryDialog: function(activities, startDate, endDate) {
         const summary = this.generateSummary(activities, startDate, endDate);
         
+        // Filtra gli eventi per il periodo corrente anche per l'export
+        const filteredActivities = activities.filter(activity => {
+            const activityStart = new Date(activity.start);
+            return activityStart >= startDate && activityStart < endDate;
+        });
+        
         let content = `
             <div class="summary-content">
                 <h5>Period Summary</h5>
@@ -255,7 +267,7 @@ window.TimesheetCalendarUtils = {
             ],
             primary_action_label: 'Export CSV',
             primary_action: () => {
-                this.exportToCSV(activities);
+                this.exportToCSV(filteredActivities);
                 dialog.hide();
             }
         });
