@@ -41,7 +41,7 @@ def add_link_to_projects_workspace():
         
         # Verifica se il link esiste già nella sezione Time Tracking
         for link in workspace.links:
-            if link.get("label") == "Advanced Timesheet Calendar" and link.get("link_to") == "advanced_tc" and link.get("type") == "Link":
+            if link.get("label") == "Advanced Timesheet Calendar" and link.get("link_to") == "advanced_tc" and link.get("link_type") == "Page" and link.get("type") == "Link":
                 print("ℹ️ Link 'Advanced Timesheet Calendar' già presente nella sezione Time Tracking della workspace Projects")
                 return
         
@@ -101,7 +101,7 @@ def remove_link_from_projects_workspace():
         # Trova e rimuovi il link
         links_to_remove = []
         for i, link in enumerate(workspace.links):
-            if link.get("label") == "Advanced Timesheet Calendar" and link.get("link_to") == "advanced_tc" and link.get("type") == "Link":
+            if link.get("label") == "Advanced Timesheet Calendar" and link.get("link_to") == "advanced_tc" and link.get("link_type") == "Page" and link.get("type") == "Link":
                 links_to_remove.append(i)
         
         # Rimuovi i links in ordine inverso per mantenere gli indici corretti
