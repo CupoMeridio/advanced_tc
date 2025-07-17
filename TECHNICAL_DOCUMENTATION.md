@@ -23,24 +23,29 @@ Main configuration file that defines:
 
 ```python
 app_name = "advanced_tc"
-app_title = "Advanced Timesheet Calendar"
-app_publisher = "Youbiquo"
-app_description = "Advanced calendar interface for ERPNext timesheets"
-app_version = "0.1.1"
+app_title = "AdvancedTC"
+app_publisher = "Prova"
+app_description = "Calendar view per i timesheets details"
+app_version = "0.0.1"
+
+# Apps screen integration
+add_to_apps_screen = [
+    {
+        "name": "advanced_tc",
+        "logo": "/assets/advanced_tc/images/logo.svg",
+        "title": _("Advanced Timesheet Calendar"),
+        "route": "app/advanced_tc",
+        "has_permission": "advanced_tc.api.timesheet_details.has_permission"
+    }
+]
 
 # CSS and JS includes
-app_include_css = [
-    "/assets/advanced_tc/css/timesheet_calendar.css"
-]
+app_include_css = "/assets/advanced_tc/css/timesheet_calendar.css"
+page_js = {"advanced_tc" : "public/js/timesheet_calendar.js"}
 
-app_include_js = [
-    "/assets/advanced_tc/js/timesheet_calendar.js"
-]
-
-# Page definitions
-website_route_rules = [
-    {"from_route": "/advanced-tc", "to_route": "advanced_tc"}
-]
+# Installation hooks
+after_install = "advanced_tc.install.after_install"
+before_uninstall = "advanced_tc.install.before_uninstall"
 ```
 
 #### `advanced_tc/install.py`
@@ -48,17 +53,35 @@ Installation script with setup procedures:
 
 ```python
 import frappe
+from frappe import _
 
 def after_install():
     """Post-installation setup"""
-    print("\n" + "="*50)
-    print("🎉 AdvancedTC Installation Complete!")
-    print("="*50)
-    print("📋 Next Steps:")
-    print("1. Assign users appropriate ERPNext roles")
-    print("2. Configure project assignments via 'Assign To'")
-    print("3. Access via: Modules > AdvancedTC")
-    print("="*50 + "\n")
+    try:
+        print("🚀 Inizializzazione Advanced Timesheet Calendar...")
+        
+        # Crea workspace custom dedicata
+        create_custom_workspace()
+        
+        frappe.db.commit()
+        print("✅ Installazione completata con successo!")
+        print("ℹ️ L'app è accessibile tramite:")
+        print("   • Link diretto: /app/advanced_tc")
+        print("   • Icona nella sezione Apps del desktop ERPNext")
+        print("   • Workspace dedicata: Advanced Timesheet Calendar")
+        
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(f"Errore durante l'installazione: {str(e)}", "Timesheet Calendar Install")
+        print(f"❌ Errore durante l'installazione: {str(e)}")
+
+def create_custom_workspace():
+    """Creates a dedicated workspace for Advanced Timesheet Calendar"""
+    # Implementation details...
+
+def before_uninstall():
+    """Cleanup before uninstallation"""
+    # Removes custom workspace and performs cleanup
 ```
 
 ### Frontend Architecture
@@ -82,9 +105,11 @@ class AdvancedTimesheetCalendar {
     }
     
     init_calendar() {
-        // FullCalendar initialization
+        // FullCalendar initialization with localization
         this.calendar = new FullCalendar.Calendar(this.calendar_container, {
-            initialView: 'dayGridMonth',
+            initialView: 'timeGridWeek',
+            timeZone: 'local', // Uses local timezone
+            locale: 'it', // Italian localization
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -98,6 +123,9 @@ class AdvancedTimesheetCalendar {
             eventResize: this.handle_event_resize.bind(this),
             eventClick: this.handle_event_click.bind(this)
         });
+        
+        // Add CSS class for page-specific styling
+        $(this.wrapper).addClass('page-advanced_tc');
     }
 }
 ```
