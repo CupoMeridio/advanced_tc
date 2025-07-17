@@ -8,9 +8,6 @@ def after_install():
     try:
         print("🚀 Inizializzazione Advanced Timesheet Calendar...")
         
-        # Aggiungi link alla workspace Projects
-        add_link_to_projects_workspace()
-        
         # Crea workspace custom dedicata
         create_custom_workspace()
         
@@ -19,85 +16,12 @@ def after_install():
         print("ℹ️ L'app è accessibile tramite:")
         print("   • Link diretto: /app/advanced_tc")
         print("   • Icona nella sezione Apps del desktop ERPNext")
-        print("   • Shortcut 'Advanced Timesheet Calendar' nella sezione Your Shortcuts della workspace Projects")
         print("   • Workspace dedicata: Advanced Timesheet Calendar")
         
     except Exception as e:
         frappe.db.rollback()
         frappe.log_error(f"Errore durante l'installazione: {str(e)}", "Timesheet Calendar Install")
         print(f"❌ Errore durante l'installazione: {str(e)}")
-
-# Funzioni rimosse: create_custom_roles() e setup_permissions()
-# L'app ora utilizza i ruoli di base di ERPNext
-
-def add_link_to_projects_workspace():
-    """
-    Aggiunge il link all'Advanced Timesheet Calendar nella sezione Your Shortcuts della workspace Projects
-    """
-    try:
-        # Verifica se la workspace Projects esiste
-        if not frappe.db.exists("Workspace", "Projects"):
-            print("⚠️ Workspace Projects non trovata, salto l'aggiunta del link")
-            return
-        
-        # Carica la workspace Projects
-        workspace = frappe.get_doc("Workspace", "Projects")
-        
-        # Verifica se il shortcut esiste già
-        shortcut_exists = False
-        for shortcut in workspace.shortcuts:
-            if shortcut.link_to == "advanced_tc" and shortcut.type == "Page":
-                shortcut_exists = True
-                break
-        
-        if not shortcut_exists:
-            # Crea il nuovo shortcut
-            new_shortcut = {
-                "label": "Advanced Timesheet Calendar",
-                "link_to": "advanced_tc",
-                "type": "Page",
-                "color": "Green"
-            }
-            
-            workspace.append("shortcuts", new_shortcut)
-            workspace.save(ignore_permissions=True)
-            print("✅ Shortcut aggiunto alla sezione Your Shortcuts della workspace Projects")
-        else:
-            print("ℹ️ Shortcut già presente nella sezione Your Shortcuts")
-            
-    except Exception as e:
-        frappe.log_error(f"Errore nell'aggiunta del shortcut alla workspace Projects: {str(e)}", "Advanced TC Install")
-        print(f"⚠️ Errore nell'aggiunta del shortcut alla workspace Projects: {str(e)}")
-
-def remove_link_from_projects_workspace():
-    """
-    Rimuove il shortcut all'Advanced Timesheet Calendar dalla sezione Your Shortcuts della workspace Projects
-    """
-    try:
-        # Verifica se la workspace Projects esiste
-        if not frappe.db.exists("Workspace", "Projects"):
-            return
-        
-        # Carica la workspace Projects
-        workspace = frappe.get_doc("Workspace", "Projects")
-        
-        # Trova e rimuovi il shortcut
-        shortcuts_to_remove = []
-        for i, shortcut in enumerate(workspace.shortcuts):
-            if shortcut.link_to == "advanced_tc" and shortcut.type == "Page":
-                shortcuts_to_remove.append(i)
-        
-        # Rimuovi i shortcuts in ordine inverso per mantenere gli indici corretti
-        for i in reversed(shortcuts_to_remove):
-            workspace.shortcuts.pop(i)
-        
-        if shortcuts_to_remove:
-            workspace.save(ignore_permissions=True)
-            print("🗑️ Shortcut rimosso dalla sezione Your Shortcuts della workspace Projects")
-            
-    except Exception as e:
-        frappe.log_error(f"Errore nella rimozione del shortcut dalla workspace Projects: {str(e)}", "Advanced TC Uninstall")
-        print(f"⚠️ Errore nella rimozione del shortcut dalla workspace Projects: {str(e)}")
 
 def create_custom_workspace():
     """
@@ -118,7 +42,7 @@ def create_custom_workspace():
             "icon": "calendar",
             "is_hidden": 0,
             "public": 1,
-            "content": '[{"id":"header1","type":"header","data":{"text":"<span class=\\"h4\\"><b>Advanced Timesheet Calendar</b></span>","col":12}},{"id":"shortcut1","type":"shortcut","data":{"shortcut_name":"Advanced Timesheet Calendar","col":6}}]',
+            "content": '[{"id":"header1","type":"header","data":{"text":"<span class=\\"h4\\"><b>Advanced Timesheet Calendar</b></span>","col":12}},{"id":"intro1","type":"paragraph","data":{"text":"<p class=\\"text-muted\\">Visualizza e gestisci i tuoi timesheet in un formato calendario intuitivo. Questa applicazione ti permette di:</p><ul class=\\"text-muted\\"><li>📅 Visualizzare i timesheet in formato calendario</li><li>⏱️ Aggiungere rapidamente nuove voci timesheet</li><li>📊 Monitorare le ore lavorate per progetto</li><li>🔍 Filtrare per dipendente, progetto e periodo</li></ul><p class=\\"text-muted mb-4\\">Clicca sul link sottostante per iniziare:</p>","col":12}},{"id":"shortcut1","type":"shortcut","data":{"shortcut_name":"Advanced Timesheet Calendar","col":6}}]',
             "shortcuts": [
                 {
                     "type": "Page",
@@ -163,9 +87,6 @@ def before_uninstall():
     """
     try:
         print("🧹 Avvio pulizia Advanced Timesheet Calendar...")
-        
-        # Rimuovi link dalla workspace Projects
-        remove_link_from_projects_workspace()
         
         # Rimuovi workspace custom dedicata
         remove_custom_workspace()
