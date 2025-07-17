@@ -113,17 +113,27 @@ def create_custom_workspace():
         workspace = frappe.get_doc({
             "doctype": "Workspace",
             "title": "Advanced Timesheet Calendar",
+            "label": "Advanced Timesheet Calendar",
             "module": "Projects",
-            "icon": "fa fa-calendar",
-            "indicator_color": "blue",
-            "is_standard": 0,
+            "icon": "calendar",
+            "is_hidden": 0,
             "public": 1,
+            "content": '[{"id":"header1","type":"header","data":{"text":"<span class=\\"h4\\"><b>Advanced Timesheet Calendar</b></span>","col":12}},{"id":"shortcut1","type":"shortcut","data":{"shortcut_name":"Advanced Timesheet Calendar","col":6}}]',
             "shortcuts": [
                 {
-                    "label": "Advanced Timesheet Calendar",
-                    "link_to": "advanced_tc",
                     "type": "Page",
-                    "color": "Blue"
+                    "link_to": "advanced_tc",
+                    "label": "Advanced Timesheet Calendar",
+                }
+            ],
+            "links": [
+                {
+                    "type": "Link",
+                    "link_type": "Page",
+                    "link_to": "advanced_tc",
+                    "label": "Advanced Timesheet Calendar",
+                    "hidden": 0,
+                    "onboard": 1
                 }
             ]
         })
