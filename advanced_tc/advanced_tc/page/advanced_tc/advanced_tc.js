@@ -5,6 +5,9 @@ frappe.pages['advanced_tc'].on_page_load = function(wrapper) {
 		single_column: true
 	});
 	
+	// Aggiungi la classe CSS per limitare gli stili a questa pagina
+	$(wrapper).addClass('page-advanced_tc');
+	
 	// Inizializza la calendar view
 	new AdvancedTimesheetCalendar(page);
 };
