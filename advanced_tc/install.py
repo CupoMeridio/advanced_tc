@@ -38,10 +38,11 @@ def create_custom_workspace():
             "doctype": "Workspace",
             "title": "Advanced Timesheet Calendar",
             "label": "Advanced Timesheet Calendar",
-            "module": "Projects",
+            "module": "advanced_tc",
             "icon": "calendar",
             "is_hidden": 0,
             "public": 1,
+            "sequence_id": 99,
             "content": '[{"id":"header1","type":"header","data":{"text":"<span class=\\"h4\\"><b>Advanced Timesheet Calendar</b></span>","col":12}},{"id":"intro1","type":"paragraph","data":{"text":"<p class=\\"text-muted\\">Visualizza e gestisci i tuoi timesheet in un formato calendario intuitivo. Questa applicazione ti permette di:</p><ul class=\\"text-muted\\"><li>📅 Visualizzare i timesheet in formato calendario</li><li>⏱️ Aggiungere rapidamente nuove voci timesheet</li><li>📊 Monitorare le ore lavorate per progetto</li><li>🔍 Filtrare per dipendente, progetto e periodo</li></ul><p class=\\"text-muted mb-4\\">Clicca sul link sottostante per iniziare:</p>","col":12}},{"id":"shortcut1","type":"shortcut","data":{"shortcut_name":"Advanced Timesheet Calendar","col":6}}]',
             "shortcuts": [
                 {
