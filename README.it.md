@@ -24,6 +24,8 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 
 6. **Validazione Task-Employee-Project Mancante**: ERPNext permette di creare task per un progetto e assegnarle a dipendenti che non sono associati a quel progetto, causando confusione nella gestione e problemi di controllo accessi
 
+7. **Assenza di Gestione Settimanale Timesheet**: Il sistema standard non raggruppa automaticamente le attività in timesheet settimanali, rendendo difficile la reportistica e la coerenza dei dati
+
 #### ✅ **Soluzioni Implementate in AdvancedTC**
 
 - **Vista Calendario Moderna**: Interfaccia basata su FullCalendar.js con visualizzazione temporale intuitiva
@@ -32,6 +34,7 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 - **Export Intelligente**: Funzionalità di export CSV
 - **Gestione Pause Avanzata**: Supporto nativo per break con creazione automatica di attività separate
 - **Validazione Task-Employee-Project**: Sistema di controllo che impedisce l'assegnazione di task a dipendenti non associati al progetto
+- **Gestione Settimanale Timesheet**: Raggruppamento automatico delle attività in timesheet settimanali tramite logica backend e frontend dedicata
 - **Integrazione Completa**: Mantiene la compatibilità totale con il sistema ERPNext esistente
 
 ## 📑 Indice
@@ -68,9 +71,11 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 - **Integrazione ERPNext**: Completa con Timesheet e Timesheet Detail
 - **Sistema di Assegnazione Progetti**: Utilizza la funzionalità "Assign To" di ERPNext per il controllo accessi
 - **Accesso Basato sui Ruoli**: I manager vedono tutti i progetti, gli employee solo quelli assegnati
-- **Export e Reporting**: CSV export
+- **Export e Reporting**: CSV export con statistiche dettagliate
 - **Gestione Pause**: Supporto completo per break e pause pranzo
 - **Personalizzazione**: Colori dinamici e configurazioni avanzate
+- **Creazione Automatica Workspace**: Workspace dedicata creata durante l'installazione
+- **Integrazione Sezione Apps**: Accesso diretto dalla sezione apps di ERPNext
 
 ## 📋 Prerequisiti
 
@@ -131,15 +136,20 @@ bench restart
 
 ## 🚀 Accesso all'Applicazione
 
-Dopo l'installazione riuscita, puoi accedere ad Advanced Timesheet Calendar in due modi:
+Dopo l'installazione riuscita, puoi accedere ad Advanced Timesheet Calendar in tre modi:
 
-### 1. Sezione Apps (Raccomandato)
+### 1. Sezione Apps
 - Naviga al desktop di ERPNext
 - Clicca sulla sezione **"Apps"**
 - Cerca l'icona **"Advanced Timesheet Calendar"** con il simbolo del calendario
 - Clicca sull'icona per avviare l'applicazione
 
-### 2. Link Diretto
+### 2. Workspace Dedicata
+- Naviga alla workspace **"Advanced Timesheet Calendar"**
+- Questa workspace viene creata automaticamente durante l'installazione
+- Contiene scorciatoie e collegamenti all'applicazione
+
+### 3. Link Diretto
 - Naviga direttamente a: `https://tuo-sito.com/app/advanced_tc`
 - Oppure usa il percorso relativo: `/app/advanced_tc`
 
@@ -255,6 +265,12 @@ cp -r /path/to/advanced_tc /path/to/frappe-bench/apps/
 # Verifica che i file essenziali esistano
 ls /path/to/frappe-bench/apps/advanced_tc/advanced_tc/hooks.py
 ls /path/to/frappe-bench/apps/advanced_tc/advanced_tc/__init__.py
+
+# Riavvia il bench
+# Alcune volte riavviare il bench risolve il problema
+bench restart
+# oppure riavvia manualmente con Ctrl+c e
+bench start
 ```
 
 ### Errore "InvalidGitRepositoryError"

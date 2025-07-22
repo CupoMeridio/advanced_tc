@@ -24,6 +24,8 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 
 6. **Missing Task-Employee-Project Validation**: ERPNext allows creating tasks for a project and assigning them to employees who are not associated with that project, causing confusion in management and access control issues
 
+7. **No Weekly Timesheet Management**: The standard system does not automatically group activities into weekly timesheets, making reporting and data consistency more difficult
+
 #### ✅ **Solutions Implemented in AdvancedTC**
 
 - **Modern Calendar View**: Interface based on FullCalendar.js with intuitive temporal visualization
@@ -32,6 +34,7 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 - **Smart Export**: CSV export functionality
 - **Advanced Break Management**: Native support for breaks with automatic creation of separate activities
 - **Task-Employee-Project Validation**: Control system that prevents assignment of tasks to employees not associated with the project
+- **Weekly Timesheet Management**: Automatic grouping of activities into weekly timesheets via dedicated backend and frontend logic
 - **Complete Integration**: Maintains full compatibility with the existing ERPNext system
 
 ## 📑 Table of Contents
@@ -67,9 +70,11 @@ ERPNext, while being an excellent open-source ERP system, has some significant l
 - **ERPNext Integration**: Complete with Timesheet and Timesheet Detail
 - **Project Assignment System**: Uses ERPNext's "Assign To" functionality for project access control
 - **Role-Based Access**: Managers see all projects, employees only see assigned projects
-- **Export and Reporting**: CSV export
+- **Export and Reporting**: CSV export with detailed statistics
 - **Break Management**: Complete support for breaks and lunch breaks
 - **Customization**: Dynamic colors and advanced configurations
+- **Automatic Workspace Creation**: Dedicated workspace created during installation
+- **Apps Screen Integration**: Direct access from ERPNext apps section
 
 ## 📋 Prerequisites
 
@@ -130,15 +135,20 @@ bench restart
 
 ## 🚀 Accessing the Application
 
-After successful installation, you can access Advanced Timesheet Calendar in two ways:
+After successful installation, you can access Advanced Timesheet Calendar in three ways:
 
-### 1. Apps Section (Recommended)
+### 1. Apps Section
 - Navigate to your ERPNext desktop
 - Click on the **"Apps"** section
 - Look for the **"Advanced Timesheet Calendar"** icon with a calendar symbol
 - Click the icon to launch the application
 
-### 2. Direct Link
+### 2. Dedicated Workspace
+- Navigate to the **"Advanced Timesheet Calendar"** workspace
+- This workspace is automatically created during installation
+- Contains shortcuts and links to the application
+
+### 3. Direct Link
 - Navigate directly to: `https://your-site.com/app/advanced_tc`
 - Or use the relative path: `/app/advanced_tc`
 
@@ -201,12 +211,13 @@ advanced_tc/
 
 ### Key Components
 
-1. **hooks.py**: Configures app_name="advanced_tc", CSS, JS and workspace
-2. **install.py**: Installation script with informative messages
+1. **hooks.py**: Configures app_name="advanced_tc", CSS, JS and workspace with automatic app screen integration
+2. **install.py**: Installation script with workspace creation and informative messages
 3. **advanced_tc.json**: Defines the main page configuration
 4. **advanced_tc.js**: Frontend logic for interactive calendar
 5. **timesheet_details.py**: Backend API endpoints for timesheet management
 6. **timesheet_calendar.css/js**: Styling and utility functions for the calendar
+7. **logo.svg/logo.png**: Application logos for the apps screen
 
 ## 🔐 Project Access Control
 
@@ -255,6 +266,13 @@ cp -r /path/to/advanced_tc /path/to/frappe-bench/apps/
 # Verify essential files exist
 ls /path/to/frappe-bench/apps/advanced_tc/advanced_tc/hooks.py
 ls /path/to/frappe-bench/apps/advanced_tc/advanced_tc/__init__.py
+
+# Just restart bench
+# Sometime restarting bench resolve the issue
+bench restart
+
+# or stop and restart manually with Ctrl+C and then
+bench start
 ```
 
 ### Error "InvalidGitRepositoryError"

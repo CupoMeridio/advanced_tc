@@ -1,13 +1,14 @@
 /* AdvancedTC - Advanced Timesheet Calendar Custom Styles */
+/* Tutti gli stili sono limitati alla pagina advanced_tc per evitare conflitti */
 
-.timesheet-calendar-container {
+.page-advanced_tc .timesheet-calendar-container {
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.calendar-filters {
+.page-advanced_tc .calendar-filters {
     background: white;
     padding: 20px;
     border-radius: 6px;
@@ -16,7 +17,7 @@
 }
 
 /* Sidebar laterale per i filtri */
-.calendar-filters-sidebar {
+.page-advanced_tc .calendar-filters-sidebar {
     background: white;
     padding: 20px;
     border-radius: 6px;
@@ -27,7 +28,7 @@
     top: 20px;
 }
 
-.sidebar-title {
+.page-advanced_tc .sidebar-title {
     color: #495057;
     font-weight: 700;
     margin-bottom: 20px;
@@ -36,21 +37,21 @@
     text-align: center;
 }
 
-.filter-group {
+.page-advanced_tc .filter-group {
     margin-bottom: 20px;
 }
 
-.filter-group:last-child {
+.page-advanced_tc .filter-group:last-child {
     margin-bottom: 0;
 }
 
 /* Stili specifici per la sidebar */
-.calendar-filters-sidebar .form-control {
+.page-advanced_tc .calendar-filters-sidebar .form-control {
     width: 100%;
     margin-bottom: 0;
 }
 
-.calendar-filters-sidebar .btn-block {
+.page-advanced_tc .calendar-filters-sidebar .btn-block {
     width: 100%;
     padding: 12px;
     font-weight: 600;
@@ -60,14 +61,14 @@
 
 /* Sidebar styles */
 
-.calendar-filters label {
+.page-advanced_tc .calendar-filters label {
     font-weight: 600;
     color: #495057;
     margin-bottom: 5px;
     display: block;
 }
 
-.calendar-filters .form-control {
+.page-advanced_tc .calendar-filters .form-control {
     border: 1px solid #ced4da;
     border-radius: 4px;
     padding: 8px 12px;
@@ -78,12 +79,12 @@
     min-height: 38px;
 }
 
-.calendar-filters .form-control:focus {
+.page-advanced_tc .calendar-filters .form-control:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
-.calendar-filters .btn {
+.page-advanced_tc .calendar-filters .btn {
     padding: 10px 20px;
     font-size: 14px;
     border-radius: 25px;
@@ -98,48 +99,48 @@
     justify-content: center;
 }
 
-.calendar-filters .btn:hover {
+.page-advanced_tc .calendar-filters .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-.calendar-filters .btn:active {
+.page-advanced_tc .calendar-filters .btn:active {
     transform: translateY(1px);
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.calendar-filters .btn-primary {
+.page-advanced_tc .calendar-filters .btn-primary {
     background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
     border: none;
 }
 
-.calendar-filters .btn-primary:hover {
+.page-advanced_tc .calendar-filters .btn-primary:hover {
     background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
 }
 
-.calendar-filters .btn-success {
+.page-advanced_tc .calendar-filters .btn-success {
     background: linear-gradient(135deg, #198754 0%, #146c43 100%);
     border: none;
 }
 
-.calendar-filters .btn-success:hover {
+.page-advanced_tc .calendar-filters .btn-success:hover {
     background: linear-gradient(135deg, #146c43 0%, #0f5132 100%);
 }
 
 /* Calendar container styling */
-#calendar {
+.page-advanced_tc #calendar {
     background: white;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     padding: 20px;
 }
 
-/* FullCalendar custom styling */
-.fc-header-toolbar {
+/* FullCalendar custom styling - solo per advanced_tc */
+.page-advanced_tc .fc-header-toolbar {
     margin-bottom: 20px;
 }
 
-.fc-button-group .fc-button {
+.page-advanced_tc .fc-button-group .fc-button {
     background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
     border: none;
     color: white;
@@ -158,37 +159,37 @@
     min-height: 36px;
 }
 
-.fc-button-group .fc-button:hover {
+.page-advanced_tc .fc-button-group .fc-button:hover {
     background: linear-gradient(135deg, #5a6268 0%, #484e53 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-.fc-button-group .fc-button:active {
+.page-advanced_tc .fc-button-group .fc-button:active {
     transform: translateY(1px);
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.fc-button-group .fc-button-active {
+.page-advanced_tc .fc-button-group .fc-button-active {
     background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
     box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3) !important;
 }
 
-.fc-today-button {
+.page-advanced_tc .fc-today-button {
     background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
     border: none !important;
     box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3) !important;
 }
 
-.fc-prev-button, .fc-next-button {
+.page-advanced_tc .fc-prev-button, .page-advanced_tc .fc-next-button {
     background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
     border: none !important;
     box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3) !important;
     padding: 8px 12px !important;
 }
 
-/* Event styling */
-.fc-event {
+/* Event styling - solo per advanced_tc */
+.page-advanced_tc .fc-event {
     border-radius: 4px;
     border: none;
     padding: 2px 4px;
@@ -197,55 +198,55 @@
     transition: all 0.2s ease;
 }
 
-.fc-event:hover {
+.page-advanced_tc .fc-event:hover {
     opacity: 0.8;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.fc-event-title {
+.page-advanced_tc .fc-event-title {
     font-weight: 500;
 }
 
-.fc-event-time {
+.page-advanced_tc .fc-event-time {
     font-weight: 400;
     opacity: 0.9;
 }
 
-/* Time grid styling */
-.fc-timegrid-slot {
+/* Time grid styling - solo per advanced_tc */
+.page-advanced_tc .fc-timegrid-slot {
     height: 30px;
 }
 
-.fc-timegrid-slot-label {
+.page-advanced_tc .fc-timegrid-slot-label {
     font-size: 12px;
     color: #6c757d;
 }
 
-.fc-timegrid-divider {
+.page-advanced_tc .fc-timegrid-divider {
     background-color: #e9ecef;
 }
 
-/* Day grid styling */
-.fc-daygrid-day {
+/* Day grid styling - solo per advanced_tc */
+.page-advanced_tc .fc-daygrid-day {
     background-color: #fff;
 }
 
-.fc-daygrid-day:hover {
+.page-advanced_tc .fc-daygrid-day:hover {
     background-color: #f8f9fa;
 }
 
-.fc-daygrid-day-number {
+.page-advanced_tc .fc-daygrid-day-number {
     color: #495057;
     font-weight: 500;
 }
 
-/* Today highlighting */
-.fc-day-today {
+/* Today highlighting - solo per advanced_tc */
+.page-advanced_tc .fc-day-today {
     background-color: #fff3cd !important;
 }
 
-.fc-day-today .fc-daygrid-day-number {
+.page-advanced_tc .fc-day-today .fc-daygrid-day-number {
     background-color: #ffc107;
     color: #212529;
     border-radius: 50%;
@@ -257,67 +258,67 @@
     margin: 2px;
 }
 
-/* Selection styling */
-.fc-highlight {
+/* Selection styling - solo per advanced_tc */
+.page-advanced_tc .fc-highlight {
     background-color: rgba(0,123,255,0.2) !important;
 }
 
 
 
-/* Dialog customizations */
-.modal-dialog .modal-content {
+/* Dialog customizations - solo per advanced_tc */
+.page-advanced_tc .modal-dialog .modal-content {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.modal-header {
+.page-advanced_tc .modal-header {
     background-color: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
     border-radius: 8px 8px 0 0;
 }
 
-.modal-title {
+.page-advanced_tc .modal-title {
     font-weight: 600;
     color: #495057;
 }
 
-/* Custom activity type colors */
-.fc-event[data-activity="Development"] {
+/* Custom activity type colors - solo per advanced_tc */
+.page-advanced_tc .fc-event[data-activity="Development"] {
     background-color: #3498db;
     border-color: #3498db;
 }
 
-.fc-event[data-activity="Testing"] {
+.page-advanced_tc .fc-event[data-activity="Testing"] {
     background-color: #e74c3c;
     border-color: #e74c3c;
 }
 
-.fc-event[data-activity="Meeting"] {
+.page-advanced_tc .fc-event[data-activity="Meeting"] {
     background-color: #f39c12;
     border-color: #f39c12;
 }
 
-.fc-event[data-activity="Documentation"] {
+.page-advanced_tc .fc-event[data-activity="Documentation"] {
     background-color: #2ecc71;
     border-color: #2ecc71;
 }
 
-.fc-event[data-activity="Support"] {
+.page-advanced_tc .fc-event[data-activity="Support"] {
     background-color: #9b59b6;
     border-color: #9b59b6;
 }
 
-.fc-event[data-activity="Training"] {
+.page-advanced_tc .fc-event[data-activity="Training"] {
     background-color: #1abc9c;
     border-color: #1abc9c;
 }
 
-/* Loading state */
-.calendar-loading {
+/* Loading state - solo per advanced_tc */
+.page-advanced_tc .calendar-loading {
     position: relative;
 }
 
-.calendar-loading::after {
+.page-advanced_tc .calendar-loading::after {
     content: '';
     position: absolute;
     top: 0;
@@ -331,7 +332,7 @@
     z-index: 1000;
 }
 
-.calendar-loading::before {
+.page-advanced_tc .calendar-loading::before {
     content: 'Loading...';
     position: absolute;
     top: 50%;
@@ -343,23 +344,23 @@
 }
 
 /* Utility classes */
-.text-muted {
+.page-advanced_tc .text-muted {
     color: #6c757d !important;
 }
 
-.font-weight-bold {
+.page-advanced_tc .font-weight-bold {
     font-weight: 700 !important;
 }
 
-.mb-3 {
+.page-advanced_tc .mb-3 {
     margin-bottom: 1rem !important;
 }
 
-.ml-2 {
+.page-advanced_tc .ml-2 {
     margin-left: 0.5rem !important;
 }
 
-#settings-btn {
+.page-advanced_tc #settings-btn {
     background: linear-gradient(135deg, #17a2b8, #138496);
     border: none;
     color: white;
@@ -367,13 +368,13 @@
     transition: all 0.3s ease;
 }
 
-#settings-btn:hover {
+.page-advanced_tc #settings-btn:hover {
     background: linear-gradient(135deg, #138496, #117a8b);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-#generate-report-btn {
+.page-advanced_tc #generate-report-btn {
     background: linear-gradient(135deg, #007bff, #0056b3);
     border: none;
     color: white;
@@ -381,24 +382,24 @@
     transition: all 0.3s ease;
 }
 
-#generate-report-btn:hover {
+.page-advanced_tc #generate-report-btn:hover {
     background: linear-gradient(135deg, #0056b3, #004085);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Print styles */
+/* Print styles - solo per advanced_tc */
 @media print {
-    .calendar-filters {
+    .page-advanced_tc .calendar-filters {
         display: none;
     }
     
-    .timesheet-calendar-container {
+    .page-advanced_tc .timesheet-calendar-container {
         box-shadow: none;
         background: white;
     }
     
-    #calendar {
+    .page-advanced_tc #calendar {
         box-shadow: none;
     }
 }
