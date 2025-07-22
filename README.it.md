@@ -24,6 +24,8 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 
 6. **Validazione Task-Employee-Project Mancante**: ERPNext permette di creare task per un progetto e assegnarle a dipendenti che non sono associati a quel progetto, causando confusione nella gestione e problemi di controllo accessi
 
+7. **Assenza di Gestione Settimanale Timesheet**: Il sistema standard non raggruppa automaticamente le attività in timesheet settimanali, rendendo difficile la reportistica e la coerenza dei dati
+
 #### ✅ **Soluzioni Implementate in AdvancedTC**
 
 - **Vista Calendario Moderna**: Interfaccia basata su FullCalendar.js con visualizzazione temporale intuitiva
@@ -32,6 +34,7 @@ ERPNext, pur essendo un eccellente sistema ERP open-source, presenta alcune limi
 - **Export Intelligente**: Funzionalità di export CSV
 - **Gestione Pause Avanzata**: Supporto nativo per break con creazione automatica di attività separate
 - **Validazione Task-Employee-Project**: Sistema di controllo che impedisce l'assegnazione di task a dipendenti non associati al progetto
+- **Gestione Settimanale Timesheet**: Raggruppamento automatico delle attività in timesheet settimanali tramite logica backend e frontend dedicata
 - **Integrazione Completa**: Mantiene la compatibilità totale con il sistema ERPNext esistente
 
 ## 📑 Indice
