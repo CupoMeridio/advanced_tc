@@ -30,14 +30,7 @@ def create_custom_workspace():
     try:
         # Verifica se la workspace esiste già
         if frappe.db.exists("Workspace", "Advanced Timesheet Calendar"):
-            print("ℹ️ Workspace 'Advanced Timesheet Calendar' già esistente, rimuovo i ruoli per renderlo pubblico...")
-            # Rimuovi tutti i ruoli per renderlo visibile a tutti
-            existing_workspace = frappe.get_doc("Workspace", "Advanced Timesheet Calendar")
-            existing_workspace.roles = []
-            existing_workspace.public = 1
-            existing_workspace.is_hidden = 0
-            existing_workspace.save(ignore_permissions=True)
-            print("✅ Workspace reso pubblico per tutti gli utenti")
+            print("ℹ️ Workspace 'Advanced Timesheet Calendar' già esistente")
             return
         
         # Crea la nuova workspace
@@ -49,14 +42,23 @@ def create_custom_workspace():
             "icon": "calendar",
             "is_hidden": 0,
             "public": 1,
-            "roles": [],
             "sequence_id": 99,
-            "content": '[{"id":"header1","type":"header","data":{"text":"<span class=\\"h4\\"><b>Advanced Timesheet Calendar</b></span>","col":12}},{"id":"intro1","type":"paragraph","data":{"text":"<p class=\\"text-muted\\">Visualizza e gestisci i tuoi timesheet in un formato calendario intuitivo. Questa applicazione ti permette di:</p><ul class=\\"text-muted\\"><li>📅 Visualizzare i timesheet in formato calendario</li><li>⏱️ Aggiungere rapidamente nuove voci timesheet</li><li>📊 Monitorare le ore lavorate per progetto</li><li>🔍 Filtrare per dipendente, progetto e periodo</li></ul><p class=\\"text-muted mb-4\\">Usa il pulsante nella barra degli strumenti per accedere all\'applicazione.</p>","col":12}}]',
+            "content": '[{"id":"header1","type":"header","data":{"text":"<span class=\\"h4\\"><b>Advanced Timesheet Calendar</b></span>","col":12}},{"id":"intro1","type":"paragraph","data":{"text":"<p class=\\"text-muted\\">Visualizza e gestisci i tuoi timesheet in un formato calendario intuitivo. Questa applicazione ti permette di:</p><ul class=\\"text-muted\\"><li>📅 Visualizzare i timesheet in formato calendario</li><li>⏱️ Aggiungere rapidamente nuove voci timesheet</li><li>📊 Monitorare le ore lavorate per progetto</li><li>🔍 Filtrare per dipendente, progetto e periodo</li></ul><p class=\\"text-muted mb-4\\">Clicca sul link sottostante per iniziare:</p>","col":12}},{"id":"shortcut1","type":"shortcut","data":{"shortcut_name":"Advanced Timesheet Calendar","col":6}}]',
             "shortcuts": [
                 {
-                    "type": "URL",
+                    "type": "Page",
+                    "link_to": "advanced_tc",
                     "label": "Advanced Timesheet Calendar",
-                    "url": "/app/advanced_tc",
+                }
+            ],
+            "links": [
+                {
+                    "type": "Link",
+                    "link_type": "Page",
+                    "link_to": "advanced_tc",
+                    "label": "Advanced Timesheet Calendar",
+                    "hidden": 0,
+                    "onboard": 1
                 }
             ]
         })
