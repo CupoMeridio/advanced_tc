@@ -313,6 +313,37 @@
     border-color: #1abc9c;
 }
 
+/* Dark mode activity colors - slightly brighter for better visibility */
+[data-theme="dark"] .page-advanced_tc .fc-event[data-activity="Development"] {
+    background-color: #5dade2;
+    border-color: #5dade2;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-event[data-activity="Testing"] {
+    background-color: #ec7063;
+    border-color: #ec7063;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-event[data-activity="Meeting"] {
+    background-color: #f7c52d;
+    border-color: #f7c52d;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-event[data-activity="Documentation"] {
+    background-color: #58d68d;
+    border-color: #58d68d;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-event[data-activity="Support"] {
+    background-color: #bb8fce;
+    border-color: #bb8fce;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-event[data-activity="Training"] {
+    background-color: #48c9b0;
+    border-color: #48c9b0;
+}
+
 /* Loading state - solo per advanced_tc */
 .page-advanced_tc .calendar-loading {
     position: relative;
@@ -386,6 +417,142 @@
     background: linear-gradient(135deg, #0056b3, #004085);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Dark Mode Support - solo per advanced_tc */
+[data-theme="dark"] .page-advanced_tc .timesheet-calendar-container {
+    background: #1a1a1a;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .calendar-filters,
+[data-theme="dark"] .page-advanced_tc .calendar-filters-sidebar {
+    background: #2d2d2d;
+    color: #e9ecef;
+    border: 1px solid #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .sidebar-title {
+    color: #e9ecef;
+    border-bottom-color: #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .calendar-filters label {
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .calendar-filters .form-control {
+    background: #404040;
+    border-color: #555;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .calendar-filters .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+[data-theme="dark"] .page-advanced_tc #calendar {
+    background: #2d2d2d;
+    color: #e9ecef;
+    border: 1px solid #404040;
+}
+
+/* FullCalendar dark mode styling */
+[data-theme="dark"] .page-advanced_tc .fc-theme-standard .fc-scrollgrid {
+    border-color: #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-theme-standard td,
+[data-theme="dark"] .page-advanced_tc .fc-theme-standard th {
+    border-color: #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-col-header-cell {
+    background: #404040;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-daygrid-day {
+    background-color: #2d2d2d;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-daygrid-day:hover {
+    background-color: #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-daygrid-day-number {
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-day-today {
+    background-color: #3d3d00 !important;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-day-today .fc-daygrid-day-number {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-timegrid-slot-label {
+    color: #adb5bd;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-timegrid-divider {
+    background-color: #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-toolbar-title {
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-button-group .fc-button {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-button-group .fc-button:hover {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-button-group .fc-button-active {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+}
+
+[data-theme="dark"] .page-advanced_tc .fc-today-button {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+}
+
+/* Modal dark mode */
+[data-theme="dark"] .page-advanced_tc .modal-dialog .modal-content {
+    background-color: #2d2d2d;
+    color: #e9ecef;
+    border: 1px solid #404040;
+}
+
+[data-theme="dark"] .page-advanced_tc .modal-header {
+    background-color: #404040;
+    border-bottom-color: #555;
+}
+
+[data-theme="dark"] .page-advanced_tc .modal-title {
+    color: #e9ecef;
+}
+
+/* Loading state dark mode */
+[data-theme="dark"] .page-advanced_tc .calendar-loading::after {
+    background: rgba(45,45,45,0.8);
+}
+
+[data-theme="dark"] .page-advanced_tc .calendar-loading::before {
+    color: #adb5bd;
+}
+
+/* Utility classes dark mode */
+[data-theme="dark"] .page-advanced_tc .text-muted {
+    color: #adb5bd !important;
 }
 
 /* Print styles - solo per advanced_tc */
