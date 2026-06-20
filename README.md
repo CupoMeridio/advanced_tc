@@ -5,6 +5,7 @@
 A custom app for ERPNext that provides an advanced calendar view for managing timesheet details (Time Sheet Detail) with complete CRUD functionality, export and reporting capabilities.
 
 <img width="1277" height="798" alt="Schermata_principale_di_esempio_advanced_tc" src="https://github.com/user-attachments/assets/f46ba848-8afe-47d2-aa32-aa5d90459fcb" />
+
 ## 🎯 Why AdvancedTC?
 
 ### Limitations of the Base ERPNext System
